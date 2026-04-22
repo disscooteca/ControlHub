@@ -1,0 +1,7 @@
+Usando Python 3.10 pois a biblioteca do git (pip install git+https://github.com/simon-larsson/ballbeam-gym) é antiga, além de:
+    python -m pip install "pip<24.1"
+    pip install setuptools==65.5.0 wheel==0.38.4
+    pip install gym==0.21.0 --no-build-isolation
+    
+pip install control
+pip install gymnasium[classic_control] moviepy
