@@ -9,7 +9,7 @@ from ballbeam_gym.envs.balance import BallBeamBalanceEnv
 from IPython.display import HTML
 import gymnasium as gym
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
-from src.utils import baixar_relatorio_bola_bastao, baixar_relatorio_pendulo_simples, get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao
+from src.utils import baixar_relatorio_pendulo_simples, get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao
 from src.utils import enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10
 from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
 from src.utils import resposta_em_funcao_de_Kp, resposta_em_funcao_de_Ki, resposta_em_funcao_de_Kd
@@ -48,7 +48,14 @@ if sistema == "Bola bastão":
         st.image("sistema-ball-and-bean.png")
 
     st.sidebar.write("---")
-    st.sidebar.button("Baixar Relatório", on_click=baixar_relatorio_bola_bastao, icon="🚨")
+    with open("Relatório Bola bastão.docx", "rb") as file:
+        btn = st.sidebar.download_button(
+            label="Baixar Relatório",
+            icon="🚨",
+            data=file,
+            file_name="Relatório Bola bastão.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
     st.sidebar.write("---")
 
     # --- Parâmetros do Sistema (fixos para esta simulação) ---
@@ -65,7 +72,7 @@ if sistema == "Bola bastão":
     dt = 0.05
     tempo = 100
     amostras = int(tempo / dt)
-    num_iteracoes = amostras # Usar o número total de amostras como iterações
+    #num_iteracoes = amostras # Usar o número total de amostras como iterações
     num_iteracoes = 150
 
     parte_simulacao = st.sidebar.selectbox(
@@ -322,7 +329,6 @@ if sistema == "Bola bastão":
         if st.sidebar.button("Simular"):
             st.subheader("Simulação em Malha Fechada (Feedback)")
 
-            # Inicializar o ambiente
             env = BallBeamBalanceEnv(
                 timestep=dt,
                 beam_length=L,
@@ -332,11 +338,9 @@ if sistema == "Bola bastão":
                 action_mode='continuous'
             )
 
-            # Configurações manuais
             env.bb.g = g
             env.bb.L = L
 
-            # Resetar o ambiente
             state = env.reset()
             if isinstance(state, tuple):
                 obs = state[0]
@@ -391,11 +395,9 @@ if sistema == "Bola bastão":
 
             st.write("Iniciando simulação...")
 
-            # Criar figura para renderização manual
             fig_render, ax_render = plt.subplots(figsize=(6, 3))
 
             for i in range(num_iteracoes):
-                # Pegar dados atuais do motor de física interno
                 ball_x = env.bb.x
                 beam_theta = env.bb.theta
 
@@ -406,6 +408,8 @@ if sistema == "Bola bastão":
                 action = K_feedback * erro
 
                 action = np.clip(action, -max_ang_alpha, max_ang_alpha)
+
+                action = -1 * action #aqui
 
                 action_history.append(action)
 
@@ -534,7 +538,6 @@ if sistema == "Bola bastão":
         if st.sidebar.button("Simular"):
             st.subheader("Simulação controle PID")
 
-            # Inicializar o ambiente
             env = BallBeamBalanceEnv(
                 timestep=dt,
                 beam_length=L,
@@ -544,11 +547,9 @@ if sistema == "Bola bastão":
                 action_mode='continuous'
             )
 
-            # Configurações manuais
             env.bb.g = g
             env.bb.L = L
 
-            # Resetar o ambiente
             state = env.reset()
             if isinstance(state, tuple):
                 obs = state[0]
@@ -605,11 +606,9 @@ if sistema == "Bola bastão":
 
             st.write("Iniciando simulação...")
 
-            # Criar figura para renderização manual
             fig_render, ax_render = plt.subplots(figsize=(6, 3))
 
             for i in range(num_iteracoes):
-                # Pegar dados atuais do motor de física interno
                 ball_x = env.bb.x
                 beam_theta = env.bb.theta
 
@@ -742,6 +741,7 @@ if sistema == "Bola bastão":
             plote_nyquist(m, g, j, R, type="Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
 
         if st.session_state.exibir_mensagem:
+            st.session_state.exibir_mensagem = False
             st.info("💡 Simule o sistema clicando no botão SIMULE na barra lateral.")
 
     if parte_simulacao == "Questão 8":

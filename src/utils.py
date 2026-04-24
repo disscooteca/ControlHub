@@ -763,9 +763,7 @@ def plote_nyquist(m, g, j, R, type, Kp=None, Ki=None, Kd=None):
     col2.pyplot(fig)
     
     plt.close(fig)
-
-def baixar_relatorio_bola_bastao():
-    st.write("Arrumar lógica")
+    
 
 def baixar_relatorio_pendulo_simples():
     st.write("Arrumar lógica")
