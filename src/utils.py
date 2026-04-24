@@ -5,6 +5,8 @@ import control as ctl
 from control import (TransferFunction)
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+import requests
+
 
 def enunciado_questao2():
     st.markdown("### Questão 2: Modelagem e Função de Transferência")

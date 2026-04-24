@@ -14,14 +14,20 @@ from src.utils import enunciado_questao2, enunciado_questao3, enunciado_questao4
 from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
 from src.utils import resposta_em_funcao_de_Kp, resposta_em_funcao_de_Ki, resposta_em_funcao_de_Kd
 import plotly.graph_objects as go
+import requests
 
-# --- Monkey Patch para corrigir o erro do matplotlib --- #
-# Isso é necessário porque o ballbeam-gym tenta usar set_window_title
-# em um backend não interativo, o que causa um AttributeError.
-# Comentamos a linha diretamente no arquivo ballbeam.py anteriormente.
-# Se o erro persistir, uma solução alternativa seria:
-# import matplotlib
-# matplotlib.figure.FigureCanvasAgg.set_window_title = lambda self, title: None
+
+ESP32_IP = "10.78.73.125"
+
+def toggle_led():
+    try:
+        response = requests.get(f"http://{ESP32_IP}/toggle" )
+        if response.status_code == 200:
+            st.success(f"Comando enviado: {response.text}")
+        else:
+            st.error(f"Erro ao enviar comando: {response.status_code} - {response.text}")
+    except requests.exceptions.ConnectionError:
+        st.error("Não foi possível conectar ao ESP32. Verifique o IP e a conexão Wi-Fi.")
 
 st.set_page_config(
     page_title="Controlpy",
@@ -71,7 +77,9 @@ if sistema == "Bola bastão":
 
     if parte_simulacao == "Questão 1":
         st.warning("Conexão com a esp32")
-
+        if st.button("Liga/Desliga Led"):
+            toggle_led()
+        
     if parte_simulacao == "Questão 2":
 
         enunciado_questao2()
