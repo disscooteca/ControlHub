@@ -10,6 +10,9 @@ from IPython.display import HTML
 import gymnasium as gym
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
 from src.utils import baixar_relatorio_bola_bastao, baixar_relatorio_pendulo_simples, get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao
+from src.utils import enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10
+from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
+from src.utils import resposta_em_funcao_de_Kp, resposta_em_funcao_de_Ki, resposta_em_funcao_de_Kd
 import plotly.graph_objects as go
 
 # --- Monkey Patch para corrigir o erro do matplotlib --- #
@@ -21,7 +24,7 @@ import plotly.graph_objects as go
 # matplotlib.figure.FigureCanvasAgg.set_window_title = lambda self, title: None
 
 st.set_page_config(
-    page_title="Simulações Controle",
+    page_title="Controlpy",
     page_icon="⚙️",
     layout="wide" 
 )
@@ -33,7 +36,10 @@ sistema = st.sidebar.selectbox(
 
 if sistema == "Bola bastão":
     
-    st.title("Simulação do Sistema Bola e Bastão")
+    st.title("Simulação do Sistema Bola e Bastão", text_alignment= 'center')
+
+    with st.expander("Representação do sistema Bola e Bastão"):
+        st.image("sistema-ball-and-bean.png")
 
     st.sidebar.write("---")
     st.sidebar.button("Baixar Relatório", on_click=baixar_relatorio_bola_bastao, icon="🚨")
@@ -58,11 +64,33 @@ if sistema == "Bola bastão":
 
     parte_simulacao = st.sidebar.selectbox(
         "Selecione a questão da simulação",
-        ("Questão 1", "Questão 2", "Questão 3")
+        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10")
     )
+
     st.sidebar.write("---")
 
     if parte_simulacao == "Questão 1":
+        st.warning("Conexão com a esp32")
+
+    if parte_simulacao == "Questão 2":
+
+        enunciado_questao2()
+
+    if parte_simulacao == "Questão 3":
+
+        enunciado_questao3()
+
+    if parte_simulacao == "Questão 4":
+
+        enunciado_questao4(L, d)
+
+    if parte_simulacao == "Questão 5":
+
+        with st.expander("Enunciado Questão 5"):
+            enunciado_questao5()
+
+        if 'exibir_mensagem' not in st.session_state:
+            st.session_state.exibir_mensagem = True
 
         # --- Inputs do Usuário ---
 
@@ -76,6 +104,10 @@ if sistema == "Bola bastão":
 
         if st.sidebar.button("Simular"):
             st.subheader("Simulação em Malha Aberta com entrada degrau")
+
+            
+
+            st.session_state.exibir_mensagem = False
 
             # Inicializar o ambiente
             env = BallBeamBalanceEnv(
@@ -180,7 +212,7 @@ if sistema == "Bola bastão":
                     truncated = False
 
                 if terminated or truncated:
-                    st.warning(f"Simulação encerrada no passo {i} (Bola caiu ou limite de tempo atingido).")
+                    st.info(f"Simulação encerrada no passo {i}.")
                     break
             
             plt.close(fig_render)
@@ -236,12 +268,43 @@ if sistema == "Bola bastão":
 
                 # Fechar o ambiente (Gym) por segurança após a plotagem
                 env.close()
+
+        st.sidebar.write("---")
+        st.sidebar.header("Plots")
+
+        if st.sidebar.button("Plote resposta ao degrau"):
+            st.session_state.exibir_mensagem = False
+            plote_resposta_MA_Bola_Bastao(m, g, j, R, q_input)
+        
+        if st.sidebar.button("Plote mapa de polos e zeros"):
+            st.session_state.exibir_mensagem = False
+            plote_mapa_polos_zeros(m, g, j, R, type= "Bola bastão MA")
+
+        if st.sidebar.button("Plote o lugar das raízes"):
+            st.session_state.exibir_mensagem = False
+            plote_lugar_raizes(m, g, j, R, type= "Bola bastão MA")
+
+        if st.sidebar.button("Plote o diagrama de Bode"):
+            st.session_state.exibir_mensagem = False
+            plote_bode(m, g, j, R, type= "Bola bastão MA")
+
+        if st.sidebar.button("Plote o diagrama de Nyquist"):
+            st.session_state.exibir_mensagem = False
+            plote_nyquist(m, g, j, R, type="Bola bastão MA")
+
+        if st.session_state.exibir_mensagem:
+            st.info("💡 Simule o sistema clicando no botão SIMULE na barra lateral.")
     
-    if parte_simulacao == "Questão 2":
+    if parte_simulacao == "Questão 6":
+
+        with st.expander("Enunciado Questão 6"):
+            enunciado_questao6()
+
+        if 'exibir_mensagem' not in st.session_state:
+            st.session_state.exibir_mensagem = True
+
         st.sidebar.header("Inputs da Simulação")
-        sinal_negativo_feedback = st.sidebar.checkbox("feedback negativo", value=True, help=f"Marcado: a entrada do sistema será (0 - posição da bola)."\
-                                             " Isso pois u = (meio do bastão) - (distância da bola ao meio).\n"
-                                             "\nDesmarcado: a entrada do sistema será (posição da bola - 0).")
+        K_feedback = st.sidebar.slider("Valor do ganho de feedback", min_value=-5.0, max_value=5.0, value=0.0, step=0.01, help=f"Valor de entrada é o K_feedback*erro [erro = referência (0 m) - posição atual da bolinha (x m)] ")
         init_velocity_input = st.sidebar.slider("Velocidade inicial da Bola", min_value=-1.0, max_value=1.0, value=0.0, step=0.01)
         opcoes_escolha_posicao = ["Aleatório", "Canto esquerdo", "Canto direito", "Centro"]
         escolha_posicao = st.sidebar.radio("Posição inicial da bola no bastão", 
@@ -271,13 +334,6 @@ if sistema == "Bola bastão":
                 obs = state[0]
             else:
                 obs = state
-
-            if sinal_negativo_feedback == True:
-                st.write("Erro = - posição da bola")
-                    
-
-            elif sinal_negativo_feedback == False:
-                st.write("Erro = + posição da bola")
                     
 
             # --- MODIFICAÇÃO: POSIÇÃO INICIAL ALEATÓRIA ---
@@ -337,14 +393,9 @@ if sistema == "Bola bastão":
 
                 frame = render_bola_bastao_frame(fig_render, ax_render, ball_x, beam_theta, L, i)
                 frames.append(frame)
-                
-                if sinal_negativo_feedback == True:
-                    erro = (0 - ball_x)
-                    action = erro
 
-                elif sinal_negativo_feedback == False:
-                    erro = (ball_x)
-                    action = erro
+                erro = (0 - ball_x)
+                action = K_feedback * erro
 
                 action = np.clip(action, -max_ang_alpha, max_ang_alpha)
 
@@ -427,7 +478,40 @@ if sistema == "Bola bastão":
                 # Fechar o ambiente (Gym) por segurança após a plotagem
                 env.close()
 
-    if parte_simulacao == "Questão 3":
+        st.sidebar.write("---")
+        st.sidebar.header("Plots")
+
+        if st.sidebar.button("Plote resposta em MF"):
+            st.session_state.exibir_mensagem = False
+            plote_resposta_MF_Bola_Bastao(m, g, j, R, K_feedback)
+        
+        if st.sidebar.button("Plote mapa de polos e zeros"):
+            st.session_state.exibir_mensagem = False
+            plote_mapa_polos_zeros(m, g, j, R, type="Bola bastão MF")
+
+        if st.sidebar.button("Plote o lugar das raízes"):
+            st.session_state.exibir_mensagem = False
+            plote_lugar_raizes(m, g, j, R, type="Bola bastão MF")
+
+        if st.sidebar.button("Plote o diagrama de Bode"):
+            st.session_state.exibir_mensagem = False
+            plote_bode(m, g, j, R, type="Bola bastão MF")
+
+        if st.sidebar.button("Plote o diagrama de Nyquist"):
+            st.session_state.exibir_mensagem = False
+            plote_nyquist(m, g, j, R, type="Bola bastão MF")
+
+        if st.session_state.exibir_mensagem:
+            st.info("💡 Simule o sistema clicando no botão SIMULE na barra lateral.")
+
+    if parte_simulacao == "Questão 7":
+
+        with st.expander("Enunciado Questão 7"):
+            enunciado_questao7()
+
+        if 'exibir_mensagem' not in st.session_state:
+            st.session_state.exibir_mensagem = True
+
         st.sidebar.header("Inputs da Simulação")
         Kp = st.sidebar.slider("Escolha um valor de Kp", min_value = -5.0, max_value = 5.0, value = 0.0, step = 0.1)
         Ki = st.sidebar.slider("Escolha um valor de Ki", min_value = -5.0, max_value = 5.0, value = 0.0, step = 0.1)
@@ -614,6 +698,53 @@ if sistema == "Bola bastão":
                 # Fechar o ambiente (Gym) por segurança após a plotagem
                 env.close()
 
+        st.sidebar.write("---")
+        st.sidebar.header("Plots")
+
+        if st.sidebar.button("Plote resposta em função de Kp"):
+            st.session_state.exibir_mensagem = False
+            resposta_em_funcao_de_Kp(m, g, j, R)
+
+        if st.sidebar.button("Plote resposta em função de Ki"):
+            st.session_state.exibir_mensagem = False
+            resposta_em_funcao_de_Ki(m, g, j, R)
+
+        if st.sidebar.button("Plote resposta em função de Kd"):
+            st.session_state.exibir_mensagem = False
+            resposta_em_funcao_de_Kd(m, g, j, R)
+        
+        if st.sidebar.button("Plote resposta PID"):
+            st.session_state.exibir_mensagem = False
+            plote_resposta_PID_Bola_Bastao(m, g, j, R, Kp, Ki, Kd)
+
+        if st.sidebar.button("Plote mapa de polos e zeros"):
+            st.session_state.exibir_mensagem = False
+            plote_mapa_polos_zeros(m, g, j, R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
+
+        if st.sidebar.button("Plote o lugar das raízes"):
+            st.session_state.exibir_mensagem = False
+            plote_lugar_raizes(m, g, j, R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
+
+        if st.sidebar.button("Plote o diagrama de Bode"):
+            st.session_state.exibir_mensagem = False
+            plote_bode(m, g, j, R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
+
+        if st.sidebar.button("Plote o diagrama de Nyquist"):
+            st.session_state.exibir_mensagem = False
+            plote_nyquist(m, g, j, R, type="Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
+
+        if st.session_state.exibir_mensagem:
+            st.info("💡 Simule o sistema clicando no botão SIMULE na barra lateral.")
+
+    if parte_simulacao == "Questão 8":
+        enunciado_questao8()
+
+    if parte_simulacao == "Questão 9":
+        enunciado_questao9()
+
+    if parte_simulacao == "Questão 10":
+        enunciado_questao10()
+
 if sistema == "Pêndulo simples invertido":
     st.title("Simulação do Sistema Bola e Bastão")
 
@@ -622,5 +753,5 @@ if sistema == "Pêndulo simples invertido":
     st.sidebar.write("---")
 
 
-else:
-    None
+# else:
+#     None
