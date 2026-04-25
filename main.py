@@ -9,7 +9,7 @@ from ballbeam_gym.envs.balance import BallBeamBalanceEnv
 from IPython.display import HTML
 import gymnasium as gym
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
-from src.utils import baixar_relatorio_pendulo_simples, get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao
+from src.utils import baixar_relatorio_pendulo_simples, get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao, plot_resultado_simulacao_pendulo
 from src.utils import enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10
 from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
 from src.utils import resposta_em_funcao_de_Kp, resposta_em_funcao_de_Ki, resposta_em_funcao_de_Kd
@@ -48,12 +48,12 @@ if sistema == "Bola bastão":
         st.image("sistema-ball-and-bean.png")
 
     st.sidebar.write("---")
-    with open("Relatório Bola bastão.docx", "rb") as file:
+    with open("Roteiro Bola bastão.docx", "rb") as file:
         btn = st.sidebar.download_button(
-            label="Baixar Relatório",
+            label="Baixar Roteiro",
             icon="🚨",
             data=file,
-            file_name="Relatório Bola bastão.docx",
+            file_name="Roteiro Bola bastão.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     st.sidebar.write("---")
@@ -89,26 +89,22 @@ if sistema == "Bola bastão":
         
     if parte_simulacao == "Questão 2":
 
-        enunciado_questao2()
+        enunciado_questao2(type="Bola bastão")
 
     if parte_simulacao == "Questão 3":
 
-        enunciado_questao3()
+        enunciado_questao3(type="Bola bastão")
 
     if parte_simulacao == "Questão 4":
 
-        enunciado_questao4(L, d)
+        enunciado_questao4(L=L, d=d, type="Bola bastão")
 
     if parte_simulacao == "Questão 5":
 
         with st.expander("Enunciado Questão 5"):
-            enunciado_questao5()
-
-        if 'exibir_mensagem' not in st.session_state:
-            st.session_state.exibir_mensagem = True
+            enunciado_questao5(type="Bola bastão")
 
         # --- Inputs do Usuário ---
-
         st.sidebar.header("Inputs da Simulação")
         q_input = st.sidebar.slider("Valor da entrada degrau", min_value=-max_ang_alpha, max_value=max_ang_alpha, value=0.0, step=0.01, help=f"Valor de entrada é a angulação do bastão em radianos indo de -{max_ang_alpha} até {max_ang_alpha} ")
         init_velocity_input = st.sidebar.slider("Velocidade inicial da Bola", min_value=-1.0, max_value=1.0, value=0.0, step=0.01)
@@ -119,10 +115,6 @@ if sistema == "Bola bastão":
 
         if st.sidebar.button("Simular"):
             st.subheader("Simulação em Malha Aberta com entrada degrau")
-
-            
-
-            st.session_state.exibir_mensagem = False
 
             # Inicializar o ambiente
             env = BallBeamBalanceEnv(
@@ -288,23 +280,23 @@ if sistema == "Bola bastão":
         st.sidebar.header("Plots")
 
         if st.sidebar.button("Plote resposta ao degrau"):
-            st.session_state.exibir_mensagem = False
+            
             plote_resposta_MA_Bola_Bastao(m, g, j, R, q_input)
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
-            st.session_state.exibir_mensagem = False
+            
             plote_mapa_polos_zeros(m, g, j, R, type= "Bola bastão MA")
 
         if st.sidebar.button("Plote o lugar das raízes"):
-            st.session_state.exibir_mensagem = False
+            
             plote_lugar_raizes(m, g, j, R, type= "Bola bastão MA")
 
         if st.sidebar.button("Plote o diagrama de Bode"):
-            st.session_state.exibir_mensagem = False
+            
             plote_bode(m, g, j, R, type= "Bola bastão MA")
 
         if st.sidebar.button("Plote o diagrama de Nyquist"):
-            st.session_state.exibir_mensagem = False
+            
             plote_nyquist(m, g, j, R, type="Bola bastão MA")
 
         if st.session_state.exibir_mensagem:
@@ -315,8 +307,6 @@ if sistema == "Bola bastão":
         with st.expander("Enunciado Questão 6"):
             enunciado_questao6()
 
-        if 'exibir_mensagem' not in st.session_state:
-            st.session_state.exibir_mensagem = True
 
         st.sidebar.header("Inputs da Simulação")
         K_feedback = st.sidebar.slider("Valor do ganho de feedback", min_value=-5.0, max_value=5.0, value=0.0, step=0.01, help=f"Valor de entrada é o K_feedback*erro [erro = referência (0 m) - posição atual da bolinha (x m)] ")
@@ -494,23 +484,23 @@ if sistema == "Bola bastão":
         st.sidebar.header("Plots")
 
         if st.sidebar.button("Plote resposta em MF"):
-            st.session_state.exibir_mensagem = False
+            
             plote_resposta_MF_Bola_Bastao(m, g, j, R, K_feedback)
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
-            st.session_state.exibir_mensagem = False
+            
             plote_mapa_polos_zeros(m, g, j, R, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o lugar das raízes"):
-            st.session_state.exibir_mensagem = False
+            
             plote_lugar_raizes(m, g, j, R, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o diagrama de Bode"):
-            st.session_state.exibir_mensagem = False
+            
             plote_bode(m, g, j, R, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o diagrama de Nyquist"):
-            st.session_state.exibir_mensagem = False
+            
             plote_nyquist(m, g, j, R, type="Bola bastão MF")
 
         if st.session_state.exibir_mensagem:
@@ -521,8 +511,6 @@ if sistema == "Bola bastão":
         with st.expander("Enunciado Questão 7"):
             enunciado_questao7()
 
-        if 'exibir_mensagem' not in st.session_state:
-            st.session_state.exibir_mensagem = True
 
         st.sidebar.header("Inputs da Simulação")
         Kp = st.sidebar.slider("Escolha um valor de Kp", min_value = -5.0, max_value = 5.0, value = 0.0, step = 0.1)
@@ -709,41 +697,38 @@ if sistema == "Bola bastão":
         st.sidebar.header("Plots")
 
         if st.sidebar.button("Plote resposta em função de Kp"):
-            st.session_state.exibir_mensagem = False
+            
             resposta_em_funcao_de_Kp(m, g, j, R)
 
         if st.sidebar.button("Plote resposta em função de Ki"):
-            st.session_state.exibir_mensagem = False
+            
             resposta_em_funcao_de_Ki(m, g, j, R)
 
         if st.sidebar.button("Plote resposta em função de Kd"):
-            st.session_state.exibir_mensagem = False
+            
             resposta_em_funcao_de_Kd(m, g, j, R)
         
         if st.sidebar.button("Plote resposta PID"):
-            st.session_state.exibir_mensagem = False
+            
             plote_resposta_PID_Bola_Bastao(m, g, j, R, Kp, Ki, Kd)
 
         if st.sidebar.button("Plote mapa de polos e zeros"):
-            st.session_state.exibir_mensagem = False
+            
             plote_mapa_polos_zeros(m, g, j, R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
 
         if st.sidebar.button("Plote o lugar das raízes"):
-            st.session_state.exibir_mensagem = False
+            
             plote_lugar_raizes(m, g, j, R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
 
         if st.sidebar.button("Plote o diagrama de Bode"):
-            st.session_state.exibir_mensagem = False
+
             plote_bode(m, g, j, R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
 
         if st.sidebar.button("Plote o diagrama de Nyquist"):
-            st.session_state.exibir_mensagem = False
+
             plote_nyquist(m, g, j, R, type="Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
 
-        if st.session_state.exibir_mensagem:
-            st.session_state.exibir_mensagem = False
-            st.info("💡 Simule o sistema clicando no botão SIMULE na barra lateral.")
-
+        
     if parte_simulacao == "Questão 8":
         enunciado_questao8()
 
@@ -754,12 +739,223 @@ if sistema == "Bola bastão":
         enunciado_questao10()
 
 if sistema == "Pêndulo simples invertido":
-    st.title("Simulação do Sistema Bola e Bastão")
+    st.title("Simulação do Sistema Pêndulo Simples Invertido")
+
+    with st.expander("Representação do sistema Pêndulo SimplesInvertido"):
+        col1, col2, col3 = st.columns([2, 1, 2])
+        col2.image("pendulum.png")
 
     st.sidebar.write("---")
-    st.sidebar.button("Baixar Relatório", on_click=baixar_relatorio_pendulo_simples, icon="🚨")
+    # with open("Roteiro Pêndulo.docx", "rb") as file:
+    #     btn = st.sidebar.download_button(
+    #         label="Baixar Roteiro",
+    #         icon="🚨",
+    #         data=file,
+    #         file_name="Roteiro Pêndulo.docx",
+    #         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    #     )
     st.sidebar.write("---")
 
+    parte_simulacao = st.sidebar.selectbox(
+        "Selecione a questão da simulação",
+        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10")
+    )
+
+    st.sidebar.write("---")
+
+    # --- Parâmetros do Sistema (fixos para esta simulação) ---
+    b = 0.01 #Coeficiente de atrito
+
+    l_cm = 20 #cm
+    d = 2 #cm
+    v = np.pi * d**2/4 * l_cm #cm³
+    m_g = 1.25 * v #1,25 g/cm³
+    g = gravidade = 9.81
+
+    lim_motor = 0.078
+
+    m = m_g/1000
+    peso = m * g # em N
+    l = l_cm/100
+    torque_min_N = peso * (l/2) #centro de massa na metade da haste
+    torque_min_kgfcm = torque_min_N * 10.197
+
+    if parte_simulacao == "Questão 1":
+        st.warning("Conexão com a esp32")
+        if st.button("Liga/Desliga Led"):
+            toggle_led()
+        
+    if parte_simulacao == "Questão 2":
+        enunciado_questao2(type="Pêndulo simples invertido")
+
+    if parte_simulacao == "Questão 3":
+        enunciado_questao3(type="Pêndulo simples invertido")
+
+    if parte_simulacao == "Questão 4":
+        enunciado_questao4(type="Pêndulo simples invertido")
+
+    if parte_simulacao == "Questão 5":
+
+        with st.expander("Enunciado Questão 5"):
+            enunciado_questao5(type="Pêndulo simples invertido")
+
+        # --- Inputs do Usuário ---
+        st.sidebar.header("Inputs da Simulação")
+        swing_up_true = st.sidebar.checkbox("Controle com Swing-up?", value=True, help="Defina se a ação vai ser dividida para duas condições ou não, conforme descrito no enunciado.")
+        q_input = st.sidebar.slider("Valor da entrada degrau", min_value=-lim_motor, max_value=lim_motor, value=0.0, step=0.005, help=f"Valor de entrada é o torque do motor indo de -{lim_motor} até {lim_motor} Nm")
+        #init_velocity_input = st.sidebar.slider("Velocidade inicial da Bola", min_value=-1.0, max_value=1.0, value=0.0, step=0.01)
+        #opcoes_escolha_posicao = ["Aleatório", "Canto esquerdo", "Canto direito", "Centro"]
+        #escolha_posicao = st.sidebar.radio("Posição inicial da bola no bastão", 
+        #                                          opcoes_escolha_posicao, help="Aleatório: A bola pode começar em qualquer ponto do bastão (mas não no centro e nem perto dele)." \
+        #                                          "\nCanto Esquerdo: A bola começa obrigatoriamente na extremidade esquerda.\nCanto Direito: A bola começa obrigatoriamente na extremidade direita.")
+
+        if st.sidebar.button("Simular"):
+
+            env = gym.make("Pendulum-v1", render_mode="rgb_array", g=gravidade, max_episode_steps=500)
+            env.unwrapped.m = m
+            env.unwrapped.l = l
+            env.unwrapped.g = gravidade
+
+            state, _ = env.reset()
+
+            frames = []
+            control_type_history = [] # 0 para Swing-up, 1 para Feedback (Catch)
+            theta_double_dot_history = []
+            external_action_history = []
+            erro_history = []
+            
+            num_iteracoes = 400
+
+            k_SWING_UP = 0.05
+            q = q_input
+
+            fig_render, ax_render = plt.subplots(figsize=(6, 3))
+
+            for i in range(num_iteracoes):
+                frames.append(env.render())
+
+                theta = np.arctan2(state[1], state[0])
+                valor_graus = np.degrees(theta)
+                theta_dot = state[2]
+
+                if swing_up_true:
+
+                    # Lógica de Transição
+                    if abs(valor_graus) <= 20:
+                        # FASE DE CATCH - Degrau
+                        erro = (0 - theta)
+                        erro_history.append(erro)
+                        torque = q 
+                        torque = np.clip(torque, -lim_motor, lim_motor)
+                        external_action_history.append(torque)
+                        resistencia_torque = -b * theta_dot
+                        action = [torque + resistencia_torque]
+                        control_type_history.append(1) # Identificador para o gráfico
+                    else:
+                        # FASE DE SWING-UP (BALANÇO)
+                        erro = (0 - theta)
+                        erro_history.append(erro)
+                        torque_swing = k_SWING_UP * theta_dot
+                        torque_swing = np.clip(torque_swing, -lim_motor, lim_motor)
+                        external_action_history.append(torque_swing)
+                        resistencia_torque = -b * theta_dot
+                        action = [torque_swing + resistencia_torque]
+                        control_type_history.append(0) # Identificador para o gráfico
+
+                else:
+                    erro = (0 - theta)
+                    erro_history.append(erro)
+                    torque = q 
+                    torque = np.clip(torque, -lim_motor, lim_motor)
+                    external_action_history.append(torque)
+                    resistencia_torque = -b * theta_dot
+                    action = [torque + resistencia_torque]
+                    control_type_history.append(1) # Identificador para o gráfico
+
+                state, reward, terminated, truncated, info = env.step(action)
+
+                theta_2dot = 3*action[0]/((m*l**2)) + 3*gravidade*np.sin(theta)/(2*l)
+
+                theta_double_dot_history.append(theta_2dot)
+
+                if terminated or truncated:
+                    break
+
+            env.close()
+
+            # --- Geração e Exibição da Animação no Streamlit ---
+            if frames:
+                # Cria a figura para a animação
+                fig_anim, ax_anim = plt.subplots(figsize=(5, 5)) 
+                
+                # Remove qualquer borda branca excedente do Matplotlib
+                fig_anim.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=0, hspace=0)
+                ax_anim.axis("off") 
+                im = ax_anim.imshow(frames[0])
+
+                def update(j):
+                    im.set_data(frames[j])
+                    return [im]
+                
+                # Mudar para [1, 2, 1] costuma dar um resultado visualmente mais centralizado que [1, 3, 1]
+                col1, col2, col3 = st.columns([1, 2, 1])
+                with col2:
+                    intervalo_ms = int(dt * 1000) if 'dt' in locals() else 50
+                    
+                    ani = animation.FuncAnimation(fig_anim, update, frames=len(frames), interval=intervalo_ms, blit=True)
+                
+                    # Converter a animação para JSHTML
+                    html_player = ani.to_jshtml()
+                    
+                    # CSS FIXO: Adicionadas as regras no 'body' e '.animation' para alinhar tudo ao centro
+                    css_fix = """
+                    <style>
+                        /* Centraliza o conteúdo dentro do iframe gerado pelo Streamlit */
+                        body {
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            flex-direction: column;
+                            margin: 0;
+                            padding: 0;
+                            overflow: hidden; /* Previne barras de rolagem desnecessárias */
+                        }
+                        /* Alinha os controles (botões) e a imagem do Matplotlib */
+                        .animation {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            margin: 0 auto;
+                        }
+                        /* Conserta a cor da fonte para Dark/Light mode */
+                        .anim-state label {
+                            color: #7F8C8D !important;
+                            font-weight: bold;
+                            font-family: sans-serif;
+                        }
+                    </style>
+                    """
+
+                    html_com_estilo = css_fix + html_player
+
+                    # Renderizar no Streamlit: scrolling=False remove as barras de rolagem cinzas laterais
+                    st.components.v1.html(html_com_estilo, height=580, scrolling=False)
+                    plt.close(fig_anim)
+
+            with st.expander("Gráficos de Desempenho"):
+            
+                # Se a variável dt não estiver declarada globalmente no seu código,
+                # você pode forçar o dt padrão do Gym: dt_sim = 0.05
+                dt_sim = dt if 'dt' in locals() else 0.05 
+
+                plot_resultado_simulacao_pendulo(
+                    dt=dt_sim,
+                    lim_motor=lim_motor,
+                    erro_history=erro_history,
+                    external_action_history=external_action_history,
+                    theta_double_dot_history=theta_double_dot_history,
+                    control_type_history=control_type_history
+                )
 
 # else:
 #     None

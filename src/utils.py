@@ -8,133 +8,238 @@ from matplotlib.lines import Line2D
 import requests
 
 
-def enunciado_questao2():
-    st.markdown("### Questão 2: Modelagem e Função de Transferência")
+def enunciado_questao2(type):
+    if type == "Bola bastão":
+        st.markdown("### Questão 2: Modelagem e Função de Transferência")
 
-    st.markdown(f"""
-    sendo:\n
-                a: aceleração (m/s²)
-                m: massa da bola (kg)
-                g: gravidade (m/s²)
-                d: offset do braço da alavanca (m)
-                L: comprimento do bastão (m)
-                R: raio da bola (m)
-                r: distância da bola até extremidade fixa (m)
-                x: distância da bola até o centro da barra (m)
-                J: momento de inércia da bola maciça 2*M*R²/5 (kg*m²)
-                alpha: ângulo do bastão (rad)
-                theta: ângulo do motor (rad)
-    """)
+        st.markdown(f"""
+        sendo:\n
+                    a: aceleração (m/s²)
+                    m: massa da bola (kg)
+                    g: gravidade (m/s²)
+                    d: offset do braço da alavanca (m)
+                    L: comprimento do bastão (m)
+                    R: raio da bola (m)
+                    r: distância da bola até extremidade fixa (m)
+                    x: distância da bola até o centro da barra (m)
+                    J: momento de inércia da bola maciça 2*M*R²/5 (kg*m²)
+                    alpha: ângulo do bastão (rad)
+                    theta: ângulo do motor (rad)
+        """)
+        
+        st.markdown("""
+        O comportamento do sistema bola-bastão pode ser representado pela equação diferencial:
+        """)
+
+        # Equação principal da imagem
+        st.latex(r"a \cdot m + a \cdot \frac{J}{R^2} + m \cdot g \cdot \operatorname{sen}(\alpha) = 0")
+        
+        st.markdown("""
+        **Pergunta:** \n\nComo obter a função de transferência considerando a entrada como o seno do ângulo do bastão $(sen(alpha))$ e a saída sendo a posição da bola ($x$)?      
+        """)
+    if type == "Pêndulo simples invertido":
+        st.markdown("### Questão 2: Modelagem e Função de Transferência")
+
+        st.markdown(f"""
+        sendo:\n
+        * **$\\theta$**: ângulo do bastão (rad)
+        * **$\dot{{\\theta}}$**: velocidade angular (rad/s)
+        * **$\ddot{{\\theta}}$**: aceleração angular (rad/s²)
+        * **$m$**: massa do bastão (kg)
+        * **$L$**: comprimento do bastão (m)
+        * **$g$**: aceleração da gravidade (m/s²)
+        * **$b$**: coeficiente de viscosidade (N·m·s/rad)
+        * **$I$**: momento de inércia do bastão de comprimento L e massa m distribuida uniformemente ($m \cdot L^2 / 3$)
+        * **$\\mathcal{{T}}_{{ext}}$**: torque externo aplicado pelo motor (N·m)
+        """)
+
+        st.markdown("""
+        O comportamento dinâmico do braço robótico (pêndulo invertido) é representado pela seguinte equação diferencial, considerando a força da gravidade aplicada no centro de massa ($L/2$):
+        """)
+
+        # Equação Diferencial Completa
+        st.latex(r"\mathcal{T}_{total} = \mathcal{T}_{externo} - b \cdot \dot{\theta} + \mathcal{T}_{gravidade} = I \cdot \ddot{\theta} ")
+
+        st.info("💡 **Dica:** Utilize a aproximação para pequenos ângulos onde $\operatorname{sen}(\\theta) \\approx \\theta$ para linearizar o sistema.")
+
+        st.markdown(r"""
+        **Pergunta:** Como obter a **função de transferência** $G(s) = \frac{\Theta(s)}{\mathcal{T}_{ext}(s)}$ , sendo a entrada como o torque externo e a saída como o ângulo $\theta$?
+        """)
+
+
+def enunciado_questao3(type):
+    if type == "Bola bastão":
+        st.markdown("### Questão 3: Linearização de Sistemas")
+        
+        st.markdown("""
+        Sistemas de controle não lineares lidam com dinâmicas que não seguem o princípio da superposição, 
+        onde a resposta não é proporcional à entrada. Apesar desses sistemas serem muito comuns e 
+        representarem diversos comportamentos cotidianos, essa não linearidade torna a análise e o 
+        controle deles muito complexos. 
+        
+        Diante disso, uma estratégia é a **linearização**, que busca representar um sistema não-linear 
+        por meio de um sistema linear em um ponto de operação.
+        
+        Levando em consideração que o $sen(\\alpha)$ transforma o sistema em não linear 
+        e de acordo com o gráfico abaixo, que representa os polinômios da Série de Taylor para o seno, 
+        qual é a opção válida para se **linearizar** esse sistema?
+        """)
+
+        # 1. Gerar os dados
+        x = np.linspace(-np.pi, np.pi, 201)
+        
+        # Funções de Taylor
+        f_sin = np.sin(x)
+        f1 = x
+        f3 = x - x**3/6
+        f5 = x - x**3/6 + x**5/120
+        f7 = x - x**3/6 + x**5/120 - x**7/5040
+        
+        # 2. Criar a figura do Plotly
+        fig = go.Figure()
+
+        # Adicionar cada linha (Trace)
+        fig.add_trace(go.Scatter(x=x, y=f_sin, name="Original (seno)", line=dict(width=3, color='blue')))
+        fig.add_trace(go.Scatter(x=x, y=f1, name="Primeira Ordem (Linear)"))
+        fig.add_trace(go.Scatter(x=x, y=f3, name="Terceira Ordem"))
+        fig.add_trace(go.Scatter(x=x, y=f5, name="Quinta Ordem"))
+        fig.add_trace(go.Scatter(x=x, y=f7, name="Sétima Ordem", line=dict(color='yellow')))
+
+        # 3. Configurações de Layout
+        fig.update_layout(
+            title="Polinômios de Taylor aplicados ao seno de α",
+            xaxis_title="Ângulo [rad]",
+            yaxis_title="sin(α)",
+            xaxis=dict(range=[-np.pi, np.pi]),
+            yaxis=dict(range=[-3.5, 3.5]), # Ajustado para manter a escala da imagem original
+            legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
+            template="plotly_white", # Fundo limpo
+            hovermode="x unified"    # Mostra todos os valores ao passar o mouse em um ponto X
+        )
+
+        col1, col2, col3 = st.columns([1,3,1])
+        # 4. Mostrar no Streamlit
+        col2.plotly_chart(fig)
+
+        # Opções formatadas com LaTeX
+        st.markdown("""
+            \na) A melhor forma de se linearizar o seno é utilizar a função original $F(\text{original}) = \sin(\\alpha)$, pois ela representa com exatidão o comportamento do sistema ao longo do tempo.
+            \nb) A melhor forma de se linearizar o seno é utilizar o polinômio de primeira ordem $F_1(x) = x$, pois ela respeita o princípio da superposição. Porém, ela se aproxima da função original só para ângulos próximos de zero.
+            \nc) A melhor forma de se linearizar o seno é utilizar o polinômio de terceira ordem $F_3(x) = x - \\frac{x^3}{6}$ pois, por mais que ele não respeite o princípio da superposição, sua resposta se aproxima melhor do original.
+            \nd) A melhor forma de se linearizar o seno é utilizar o polinômio de sétima ordem $F_7(x) = x - \\frac{x^3}{6} + \\frac{x^5}{120} - \\frac{x^7}{5040}$ pois ele é o que melhor representa o sinal original sem criar distorção.
+            \ne) A melhor forma de se linearizar o seno é utilizar o polinômio de maior ordem que o computador permite calcular, pois quanto maior a ordem, mais próximo da resposta do seno o polinômio estará.
+        """)
+
+    if type == "Pêndulo simples invertido":
+        st.markdown("### Questão 3: Estabilidade e a Aproximação Linear")
+
+        st.markdown(r"""
+            Caso solte essa haste em qualquer posição que não seja ela perfeitamente alinhada para cima de forma que não haja 
+            torque causado pela gravidade, o que acontecerá com ela? Considerando esse fato e que o desejado é que a 
+            haste fique para cima, qual é um grande problema em se considerar sen(theta) aproximadamente igual a theta?
+        """)
+
+        # --- Gráfico Plotly ---
+
+        # Gerando dados de -pi a pi
+        theta = np.linspace(-np.pi, np.pi, 500)
+        y_sin = np.sin(theta)
+        y_linear = theta
+
+        fig = go.Figure()
+
+        # Adicionando sen(theta)
+        fig.add_trace(go.Scatter(x=theta, y=y_sin, name=r'sen(θ)', line=dict(color='cyan', width=3)))
+
+        # Adicionando theta (linear)
+        fig.add_trace(go.Scatter(x=theta, y=y_linear, name=r'θ (Aproximação)', line=dict(color='red', dash='dash')))
+
+        fig.update_layout(
+            title="Comparação: sen(θ) vs θ",
+            xaxis_title="Ângulo θ (radianos)",
+            yaxis_title="Valor da Função",
+            template="plotly_dark",
+            yaxis=dict(range=[-3, 3]), # Limitando para ver o desvio
+            xaxis=dict(
+                tickmode='array',
+                tickvals=[-np.pi, -np.pi/2, 0, np.pi/2, np.pi],
+                ticktext=['-π', '-π/2', '0', 'π/2', 'π']
+            )
+        )
+
+        # Mostrando no Streamlit
+        col1, col2, col3 = st.columns([1, 3, 1])
+        col2.plotly_chart(fig, use_container_width=True)
+
+def enunciado_questao4(type, L=None, d=None):
+    if type == "Bola bastão":
+        st.markdown("### Questão 4: Relação Cinemática e Limites de Operação")
+
+        st.markdown("""
+        O comportamento do sistema depende da angulação $\\alpha$ (inclinação do bastão), 
+        mas geralmente temos controle direto apenas sobre o ângulo $\\theta$ (braço do motor).
+        
+        A relação entre esses dois ângulos é dada pela geometria do mecanismo:
+        """)
+
+        st.latex(r"sen(\alpha) \cdot L = sen(\theta) \cdot d")
+
+        st.info("Utilize a linearização encontrada na questão anterior ($sen(\\alpha)$ é aproximadamente Fx, onde Fx é o polinômio de Taylor que melhor lineariza a função).")
+
+        st.markdown(f"""
+        **Pergunta:** \n
+        Encontre quais são os maiores valores de $\\alpha$ e $\\theta$ em radianos para um sistema com:
+        * $L = {L}$ metros (Comprimento do bastão).
+        * $d = {d}$ metros (Offset do braço da alavanca).
+        
+        A resposta encontrada faz sentido com relação à condição de linearização?
+        """)
+
+    if type == "Pêndulo simples invertido":
+        st.markdown(f"""
+                    Tendo uma haste em formato cilíndrico com os seguintes parâmetros:\n
+
+                    L= 20cm \n 
+                    diâmetro= 2cm\n 
+                    densidade_haste = 1.25g/cm³ \n 
+                    gravidade = 9.81m/s²\n
+                    Qual o torque mínimo em Nm necessário que o motor precisa ter para conseguir dar uma volta completa com essa haste estando acoplado em uma de suas extremidades se desconsiderarmos o amortecimento viscoso?
+                    """)
+        
+        st.info("💡 **Dica:** A força da gravidade é aplicada na metade do comprimento L. Ademais, não use a aproximação $sen(\\theta) \\approx \\theta$ neste caso.")
+
+def enunciado_questao5(type):
+    if type == "Bola bastão":
+        st.markdown("### Questão 5: Sistema em Malha Aberta")
+
+        st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório. Coloque os inputs da simulaçao no mesmo print dos gráficos de desempenho.\n
+                    """)
+
+        st.markdown("""
+                    a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs a sua escolha.\n
+                    b) Plote a resposta ao degrau para o mesmo degrau escolhido na simulação.\n
+                    c) Plote o mapa de polos e zeros e o lugar das raízes e justifique o porquê do sistema ser instável para qualquer degrau colocado na entrada.\n
+                    d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Aberta.
+                    """)
     
-    st.markdown("""
-    O comportamento do sistema bola-bastão pode ser representado pela equação diferencial:
-    """)
+    if type == "Pêndulo simples invertido":
+        st.markdown("""
+                    Como visto em questões anteriores, há um grande problema em se linearizar a função simplesmente usando $sen(\\theta)=\\theta$. 
+                    Dessa forma, um dos artifícios para se lidar com isso é criar duas condições e aplicar o controle para duas condições específicas.
 
-    # Equação principal da imagem
-    st.latex(r"a \cdot m + a \cdot \frac{J}{R^2} + m \cdot g \cdot \operatorname{sen}(\alpha) = 0")
-    
-    st.markdown("""
-    **Pergunta:** \n\nComo obter a função de transferência considerando a entrada como o seno do ângulo do bastão $(sen(alpha))$ e a saída sendo a posição da bola ($x$)?      
-    """)
+                    - Uma para quando o sistema estiver dentro da região de contorno $(\\theta \\leq 20°$)
+                    - Outra para quando o sistema estiver fora da região de contorno  $(\\theta \\ge 20°$)
+                   
+                    Há a possibilidade de se dimensionar um motor que apenas tenha torque maior que o mínimo necessário para dar uma 
+                    volta completa. Porém a literatura apresenta outra técnica conhecida como SWING-UP, em que o pêndulo é controlado de tal 
+                    forma que sua energia é direcionada para um valor igual ao da posição vertical. 
+                    Ou seja, pensando na fórmula de energia cinética e energia potencial gravitacional, é possível usar o torque causado pela gravidade para ajudar 
+                    o sistema a chegar na condição desejada. 
 
-def enunciado_questao3():
-    st.markdown("### Questão 3: Linearização de Sistemas")
-    
-    st.markdown("""
-    Sistemas de controle não lineares lidam com dinâmicas que não seguem o princípio da superposição, 
-    onde a resposta não é proporcional à entrada. Apesar desses sistemas serem muito comuns e 
-    representarem diversos comportamentos cotidianos, essa não linearidade torna a análise e o 
-    controle deles muito complexos. 
-    
-    Diante disso, uma estratégia é a **linearização**, que busca representar um sistema não-linear 
-    por meio de um sistema linear em um ponto de operação.
-    
-    Levando em consideração que o $sen(\\alpha)$ transforma o sistema em não linear 
-    e de acordo com o gráfico abaixo, que representa os polinômios da Série de Taylor para o seno, 
-    qual é a opção válida para se **linearizar** esse sistema?
-    """)
+                    Simule o sistema com e sem o SWING UP e descreva como que essa estratégia ajuda um motor a chegar na posição 
+                    mais alta sem necessariamente atingir o torque mínimo necessário para girar a haste.
+                    """)
 
-    # 1. Gerar os dados
-    x = np.linspace(-np.pi, np.pi, 201)
-    
-    # Funções de Taylor
-    f_sin = np.sin(x)
-    f1 = x
-    f3 = x - x**3/6
-    f5 = x - x**3/6 + x**5/120
-    f7 = x - x**3/6 + x**5/120 - x**7/5040
-    
-    # 2. Criar a figura do Plotly
-    fig = go.Figure()
-
-    # Adicionar cada linha (Trace)
-    fig.add_trace(go.Scatter(x=x, y=f_sin, name="Original (seno)", line=dict(width=3, color='blue')))
-    fig.add_trace(go.Scatter(x=x, y=f1, name="Primeira Ordem (Linear)"))
-    fig.add_trace(go.Scatter(x=x, y=f3, name="Terceira Ordem"))
-    fig.add_trace(go.Scatter(x=x, y=f5, name="Quinta Ordem"))
-    fig.add_trace(go.Scatter(x=x, y=f7, name="Sétima Ordem", line=dict(color='yellow')))
-
-    # 3. Configurações de Layout
-    fig.update_layout(
-        title="Polinômios de Taylor aplicados ao seno de α",
-        xaxis_title="Ângulo [rad]",
-        yaxis_title="sin(α)",
-        xaxis=dict(range=[-np.pi, np.pi]),
-        yaxis=dict(range=[-3.5, 3.5]), # Ajustado para manter a escala da imagem original
-        legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
-        template="plotly_white", # Fundo limpo
-        hovermode="x unified"    # Mostra todos os valores ao passar o mouse em um ponto X
-    )
-
-    col1, col2, col3 = st.columns([1,3,1])
-    # 4. Mostrar no Streamlit
-    col2.plotly_chart(fig)
-
-    # Opções formatadas com LaTeX
-    st.markdown("""
-        \na) A melhor forma de se linearizar o seno é utilizar a função original $F(\text{original}) = \sin(\\alpha)$, pois ela representa com exatidão o comportamento do sistema ao longo do tempo.
-        \nb) A melhor forma de se linearizar o seno é utilizar o polinômio de primeira ordem $F_1(x) = x$, pois ela respeita o princípio da superposição. Porém, ela se aproxima da função original só para ângulos próximos de zero.
-        \nc) A melhor forma de se linearizar o seno é utilizar o polinômio de terceira ordem $F_3(x) = x - \\frac{x^3}{6}$ pois, por mais que ele não respeite o princípio da superposição, sua resposta se aproxima melhor do original.
-        \nd) A melhor forma de se linearizar o seno é utilizar o polinômio de sétima ordem $F_7(x) = x - \\frac{x^3}{6} + \\frac{x^5}{120} - \\frac{x^7}{5040}$ pois ele é o que melhor representa o sinal original sem criar distorção.
-        \ne) A melhor forma de se linearizar o seno é utilizar o polinômio de maior ordem que o computador permite calcular, pois quanto maior a ordem, mais próximo da resposta do seno o polinômio estará.
-    """)
-
-def enunciado_questao4(L, d):
-    st.markdown("### Questão 4: Relação Cinemática e Limites de Operação")
-
-    st.markdown("""
-    O comportamento do sistema depende da angulação $\\alpha$ (inclinação do bastão), 
-    mas geralmente temos controle direto apenas sobre o ângulo $\\theta$ (braço do motor).
-    
-    A relação entre esses dois ângulos é dada pela geometria do mecanismo:
-    """)
-
-    st.latex(r"sen(\alpha) \cdot L = sen(\theta) \cdot d")
-
-    st.info("Utilize a linearização encontrada na questão anterior ($sen(\\alpha)$ é aproximadamente Fx, onde Fx é o polinômio de Taylor que melhor lineariza a função).")
-
-    st.markdown(f"""
-    **Pergunta:** \n
-    Encontre quais são os maiores valores de $\\alpha$ e $\\theta$ em radianos para um sistema com:
-    * $L = {L}$ metros (Comprimento do bastão).
-    * $d = {d}$ metros (Offset do braço da alavanca).
-    
-    A resposta encontrada faz sentido com relação à condição de linearização?
-    """)
-
-def enunciado_questao5():
-    st.markdown("### Questão 5: Sistema em Malha Aberta")
-
-    st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório. Coloque os inputs da simulaçao no mesmo print dos gráficos de desempenho.\n
-                """)
-
-    st.markdown("""
-                a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs a sua escolha.\n
-                b) Plote a resposta ao degrau para o mesmo degrau escolhido na simulação.\n
-                c) Plote o mapa de polos e zeros e o lugar das raízes e justifique o porquê do sistema ser instável para qualquer degrau colocado na entrada.\n
-                d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Aberta.
-                """)
-    
 def enunciado_questao6():
     st.markdown("### Questão 6: Sistema em Malha Fechada")
 
@@ -865,3 +970,90 @@ def plot_resultado_simulacao_bola_bastao(dt, L, max_ang_alpha, ball_pos_history,
     )
 
     st.plotly_chart(fig2, use_container_width=True)
+
+
+def plot_resultado_simulacao_pendulo(dt, lim_motor, erro_history, external_action_history, 
+                                     theta_double_dot_history, control_type_history):
+    """
+    Gera e plota os gráficos interativos da simulação do pêndulo invertido usando Plotly.
+    """
+    # Eixo do tempo (garantindo que tenha o mesmo tamanho das listas)
+    t = np.linspace(0, len(erro_history) - 1, len(erro_history)) * dt
+
+    # --- Figura 1: Erro Angulatório ---
+    fig1 = go.Figure()
+
+    fig1.add_trace(go.Scatter(x=t, y=erro_history, mode='lines', line=dict(color='red'), name='Erro do Ângulo (rad)'))
+
+    fig1.update_layout(
+        title='Erro de Angulação',
+        xaxis_title='Tempo (s)',
+        yaxis_title=r'\\theta (rad)',
+        hovermode="x unified",
+        margin=dict(l=40, r=40, t=40, b=40)
+    )
+
+    st.plotly_chart(fig1, use_container_width=True)
+
+
+    # --- Figura 2: Ação (Torque do Motor) ---
+    fig2 = go.Figure()
+
+    # 1. Definindo as cores e textos com base na fase 
+    # Ciano para Swing-up (0), Roxo para Degrau (1)
+    marker_colors = ['cyan' if fase == 0 else '#b28dff' for fase in control_type_history]
+    hover_text = ["Swing-up (0)" if fase == 0 else "Degrau (1)" for fase in control_type_history]
+
+    # 2. Adicionando o traço principal (linhas conectando pontos coloridos)
+    fig2.add_trace(go.Scatter(
+        x=t, 
+        y=external_action_history, 
+        mode='lines+markers', 
+        # Linha pontilhada suave de fundo apenas para conectar os pontos
+        line=dict(color='rgba(255, 255, 255, 0.3)', dash='dot', width=1), 
+        marker=dict(
+            color=marker_colors,
+            size=5,
+            symbol='circle'
+        ),
+        name='Ação / Torque',
+        text=hover_text,
+        hovertemplate='<b>Torque:</b> %{y:.4f} Nm<br><b>Fase:</b> %{text}<extra></extra>',
+        showlegend=False # Escondemos a legenda padrão para usar as personalizadas abaixo
+    ))
+
+    # 3. Criando traços invisíveis (dummy traces) apenas para gerar uma legenda clara
+    fig2.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='cyan', size=8), name='Ação: Swing-up (0)'))
+    fig2.add_trace(go.Scatter(x=[None], y=[None], mode='markers', marker=dict(color='#b28dff', size=8), name='Ação: Degrau (1)'))
+
+    # Linhas de limite do motor
+    fig2.add_hline(y=lim_motor, line_dash="dash", line_color="orange", annotation_text="Limite Máx Motor", annotation_position="top right")
+    fig2.add_hline(y=-lim_motor, line_dash="dash", line_color="orange", annotation_text="Limite Mín Motor", annotation_position="bottom right")
+
+    fig2.update_layout(
+        title='Esforço de Controle (Torque)',
+        xaxis_title='Tempo (s)',
+        yaxis_title='Nm',
+        hovermode="x unified",
+        margin=dict(l=40, r=40, t=40, b=40),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1) # Coloca a legenda no topo
+    )
+
+    st.plotly_chart(fig2, use_container_width=True)
+
+    # --- Figura 3: Aceleração Angular  ---
+    fig3 = go.Figure()
+
+    fig3.add_trace(go.Scatter(x=t, y=theta_double_dot_history, mode='lines', line=dict(color='#D4D000'), name='Aceleração Angular (rad/s²)'))
+    
+
+    fig3.update_layout(
+        title="Aceleração Angular e Fase do Controlador",
+        xaxis_title='Tempo (s)',
+        yaxis_title='Amplitude / Estado',
+        hovermode="x unified",
+        margin=dict(l=40, r=40, t=40, b=40)
+    )
+
+    st.plotly_chart(fig3, use_container_width=True)
+
