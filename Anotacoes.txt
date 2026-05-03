@@ -5,3 +5,133 @@ Usando Python 3.10 pois a biblioteca do git (pip install git+https://github.com/
     
 pip install control
 pip install gymnasium[classic_control] moviepy
+
+pyinstaller --clean --log-level=DEBUG --onefile --name "Controlpy" --icon "app_icon.ico" --collect-all streamlit --collect-all pygame --collect-all gymnasium --copy-metadata streamlit --copy-metadata pandas --add-data "main.py;." --add-data "src/utils.py;src" run.py
+
+#MVC
+
+tcc/
+├── main.py                                    # Entry point minimalista
+├── config/
+│   ├── __init__.py
+│   ├── constants.py                           # Constantes físicas
+│   └── app_config.py                          # Configurações do app
+│
+├── core/
+│   ├── __init__.py
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── base_system.py                    # Classe abstrata
+│   │   ├── ball_beam_system.py               # Sistema Bola-Bastão
+│   │   └── pendulum_system.py                # Sistema Pêndulo
+│   │
+│   ├── controllers/
+│   │   ├── __init__.py
+│   │   ├── base_controller.py                # Interface base
+│   │   ├── open_loop_controller.py
+│   │   ├── closed_loop_controller.py
+│   │   └── pid_controller.py
+│   │
+│   └── analysis/
+│       ├── __init__.py
+│       ├── transfer_function.py              # Análise de FT
+│       ├── stability_analysis.py             # Polos, zeros, raízes
+│       └── frequency_analysis.py             # Bode, Nyquist
+│
+├── simulation/
+│   ├── __init__.py
+│   ├── simulator.py                          # Motor genérico
+│   ├── ball_beam_simulator.py                # Simulador específico
+│   └── pendulum_simulator.py                 # Simulador específico
+│
+├── visualization/
+│   ├── __init__.py
+│   ├── plots/
+│   │   ├── __init__.py
+│   │   ├── response_plots.py                 # Gráficos de resposta
+│   │   ├── stability_plots.py                # Mapa de polos, raízes
+│   │   ├── frequency_plots.py                # Bode, Nyquist
+│   │   └── performance_plots.py              # Gráficos de desempenho
+│   │
+│   ├── animations/
+│   │   ├── __init__.py
+│   │   ├── ball_beam_animation.py
+│   │   └── pendulum_animation.py
+│   │
+│   └── questions/
+│       ├── __init__.py
+│       ├── ball_beam_questions.py            # Enunciados Bola-Bastão
+│       └── pendulum_questions.py             # Enunciados Pêndulo
+│
+├── ui/
+│   ├── __init__.py
+│   ├── pages/
+│   │   ├── __init__.py
+│   │   ├── ball_beam_page.py                 # UI completa Bola-Bastão
+│   │   └── pendulum_page.py                  # UI completa Pêndulo
+│   │
+│   ├── components/
+│   │   ├── __init__.py
+│   │   ├── sidebar.py                        # Componentes sidebar
+│   │   ├── simulation_controls.py            # Controles de simulação
+│   │   └── plot_controls.py                  # Controles de plotagem
+│   │
+│   └── layouts/
+│       ├── __init__.py
+│       └── question_layout.py                # Layout padrão questões
+│
+└── utils/
+    ├── __init__.py
+    ├── math_helpers.py                       # Funções matemáticas
+    ├── validators.py                         # Validações
+    └── file_helpers.py                       # Manipulação de arquivos
+
+
+    # core/models/pendulum_system.py
+"""Modelo do sistema Pêndulo Invertido."""
+
+from control import TransferFunction
+from .base_system import BaseSystem
+
+class PendulumSystem(BaseSystem):
+    """Representa o sistema Pêndulo Simples Invertido."""
+    
+    def __init__(self, m: float, g: float, L: float, b: float):
+        """
+        Args:
+            m: Massa da haste (kg)
+            g: Gravidade (m/s²)
+            L: Comprimento da haste (m)
+            b: Coeficiente de viscosidade (N·m·s/rad)
+        """
+        super().__init__("Inverted-Pendulum")
+        self.m = m
+        self.g = g
+        self.L = L
+        self.b = b
+        self._update_transfer_function()
+    
+    def _update_transfer_function(self):
+        """Atualiza a função de transferência."""
+        numerator = [3 * self.m / self.L**2]
+        denominator = [1, 3 * self.b / (self.m * self.L**2), -3 * self.g / (2 * self.L)]
+        self._transfer_function = TransferFunction(numerator, denominator)
+    
+    def get_transfer_function(self) -> TransferFunction:
+        """Retorna H(s) do pêndulo invertido."""
+        return self._transfer_function
+    
+    def get_parameters_dict(self) -> dict:
+        """Retorna parâmetros do sistema."""
+        I = self.m * self.L**2 / 3
+        return {
+            'm': self.m,
+            'g': self.g,
+            'L': self.L,
+            'b': self.b,
+            'I': I
+        }
+    
+    def calculate_min_torque(self) -> float:
+        """Calcula torque mínimo para dar uma volta completa."""
+        return self.m * self.g * self.L / 2

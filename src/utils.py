@@ -7,6 +7,26 @@ import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import requests
 
+def enunciado_questao1(type):
+    if type == "Bola bastão":
+        st.markdown("### Questão 1: Bola Bastão - Pygame")
+
+        st.markdown(f"""
+        Cada aluno deverá do grupo deverá jogar o jogo da bola bastão desenvolvido em Pygame e coletar os dados da partida.
+        """)
+
+        st.info("Quem obtiver o menor erro médio vence!")
+
+        st.warning("⚠️ A run não vale se a bolinha cair do bastão.")
+
+    if type == "Pêndulo simples invertido":
+        st.markdown("### Questão 1: Pêndulo Simples Invertido - Pygame")
+
+        st.markdown(f"""
+        Cada aluno deverá do grupo deverá jogar o jogo do pêndulo simples invertido desenvolvido em Pygame e coletar os dados da partida.
+        """)
+
+        st.info("Quem obtiver o menor erro médio vence!")
 
 def enunciado_questao2(type):
     if type == "Bola bastão":
@@ -72,7 +92,7 @@ def enunciado_questao3(type):
         
         st.markdown("""
         Sistemas de controle não lineares lidam com dinâmicas que não seguem o princípio da superposição, 
-        onde a resposta não é proporcional à entrada. Apesar desses sistemas serem muito comuns e 
+        onde a resposta não é sempre proporcional à entrada. Apesar desses sistemas serem muito comuns e 
         representarem diversos comportamentos cotidianos, essa não linearidade torna a análise e o 
         controle deles muito complexos. 
         
@@ -122,9 +142,9 @@ def enunciado_questao3(type):
 
         # Opções formatadas com LaTeX
         st.markdown("""
-            \na) A melhor forma de se linearizar o seno é utilizar a função original $F(\text{original}) = \sin(\\alpha)$, pois ela representa com exatidão o comportamento do sistema ao longo do tempo.
-            \nb) A melhor forma de se linearizar o seno é utilizar o polinômio de primeira ordem $F_1(x) = x$, pois ela respeita o princípio da superposição. Porém, ela se aproxima da função original só para ângulos próximos de zero.
-            \nc) A melhor forma de se linearizar o seno é utilizar o polinômio de terceira ordem $F_3(x) = x - \\frac{x^3}{6}$ pois, por mais que ele não respeite o princípio da superposição, sua resposta se aproxima melhor do original.
+            \na) A melhor forma de se linearizar o seno é utilizar a função original $F_{original} = \sin(\\alpha)$, pois ela representa com exatidão o comportamento do sistema ao longo do tempo.
+            \nb) A melhor forma de se linearizar o seno é utilizar o polinômio de primeira ordem $F_1(x) = x$, pois ele respeita o princípio da superposição. Porém, ele se aproxima da função original só para ângulos próximos de zero.
+            \nc) A melhor forma de se linearizar o seno é utilizar o polinômio de terceira ordem $F_3(x) = x - \\frac{x^3}{6}$ pois, por mais que ele não respeite o princípio da superposição, sua resposta se assemelha ao original.
             \nd) A melhor forma de se linearizar o seno é utilizar o polinômio de sétima ordem $F_7(x) = x - \\frac{x^3}{6} + \\frac{x^5}{120} - \\frac{x^7}{5040}$ pois ele é o que melhor representa o sinal original sem criar distorção.
             \ne) A melhor forma de se linearizar o seno é utilizar o polinômio de maior ordem que o computador permite calcular, pois quanto maior a ordem, mais próximo da resposta do seno o polinômio estará.
         """)
@@ -175,15 +195,15 @@ def enunciado_questao4(type, L=None, d=None):
         st.markdown("### Questão 4: Relação Cinemática e Limites de Operação")
 
         st.markdown("""
-        O comportamento do sistema depende da angulação $\\alpha$ (inclinação do bastão), 
-        mas geralmente temos controle direto apenas sobre o ângulo $\\theta$ (braço do motor).
+        O comportamento do sistema é regido pela inclinação do bastão $\\alpha$, 
+        embora o controle direto seja exercido apenas sobre o ângulo do braço do motor $\\theta$.
         
         A relação entre esses dois ângulos é dada pela geometria do mecanismo:
         """)
 
         st.latex(r"sen(\alpha) \cdot L = sen(\theta) \cdot d")
 
-        st.info("Utilize a linearização encontrada na questão anterior ($sen(\\alpha)$ é aproximadamente Fx, onde Fx é o polinômio de Taylor que melhor lineariza a função).")
+        st.info("Utilize a linearização encontrada na questão anterior para $sen(\\alpha)$.")
 
         st.markdown(f"""
         **Pergunta:** \n
@@ -211,8 +231,10 @@ def enunciado_questao5(type):
     if type == "Bola bastão":
         st.markdown("### Questão 5: Sistema em Malha Aberta")
 
-        st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório. Coloque os inputs da simulaçao no mesmo print dos gráficos de desempenho.\n
+        st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n
                     """)
+        
+        st.warning("Os prints devem conter os inputs da simulação juntamente com as informações pedidas abaixo.")
 
         st.markdown("""
                     a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs a sua escolha.\n
@@ -222,29 +244,25 @@ def enunciado_questao5(type):
                     """)
     
     if type == "Pêndulo simples invertido":
-        st.markdown("""
-                    Como visto em questões anteriores, há um grande problema em se linearizar a função simplesmente usando $sen(\\theta)=\\theta$. 
-                    Dessa forma, um dos artifícios para se lidar com isso é criar duas condições e aplicar o controle para duas condições específicas.
+        st.markdown(r"""
+Como visto nas questões anteriores, a linearização do sistema utilizando a aproximação para pequenos ângulos ($\sin(\theta) \approx \theta$) possui uma limitação severa: ela só é válida quando o pêndulo já está muito próximo da posição de equilíbrio vertical. 
+                    
+Para contornar esse problema e conseguir levantar o pêndulo a partir da sua posição de repouso (pendurado para baixo), utiliza-se a estratégia não-linear de **Swing-up** (balanço). Nela, a lei de controle atua bombeando energia para o sistema com base na velocidade angular ($\omega$), onde o sinal de entrada é proporcional a $K_{SWING\_UP} \cdot \omega$.
 
-                    - Uma para quando o sistema estiver dentro da região de contorno $(\\theta \\leq 20°$)
-                    - Outra para quando o sistema estiver fora da região de contorno  $(\\theta \\ge 20°$)
-                   
-                    Há a possibilidade de se dimensionar um motor que apenas tenha torque maior que o mínimo necessário para dar uma 
-                    volta completa. Porém a literatura apresenta outra técnica conhecida como SWING-UP, em que o pêndulo é controlado de tal 
-                    forma que sua energia é direcionada para um valor igual ao da posição vertical. 
-                    Ou seja, pensando na fórmula de energia cinética e energia potencial gravitacional, é possível usar o torque causado pela gravidade para ajudar 
-                    o sistema a chegar na condição desejada. 
-
-                    Simule o sistema com e sem o SWING UP e descreva como que essa estratégia ajuda um motor a chegar na posição 
-                    mais alta sem necessariamente atingir o torque mínimo necessário para girar a haste.
-                    """)
+**Com base nisso, realize as seguintes etapas:**
+* **Simulação:** Simule o sistema com e sem a estratégia de Swing-up ativada e registre os resultados.
+* **Análise:** Discorra sobre como esse método é útil para o controle do sistema no mundo real.
+* **Controle Híbrido:** Explique o motivo de a simulação utilizar duas zonas de controle distintas: a fase de balanço (*Swing-up*) e a fase de estabilização (*Catching*, ou "captura").
+""")
 
 def enunciado_questao6(type):
     if type == "Bola bastão":
         st.markdown("### Questão 6: Sistema em Malha Fechada")
 
-        st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório. Coloque os inputs da simulaçao no mesmo print dos gráficos de desempenho.\n
+        st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n
                     """)
+        
+        st.warning("Os prints devem conter os inputs da simulação juntamente com as informações pedidas abaixo.")
 
         st.markdown("""
                     a) Simule o sistema para um valor de K_feedback diferente de 0.00 e demais inputs a sua escolha.\n
@@ -258,10 +276,45 @@ def enunciado_questao6(type):
                     """)
         
     if type == "Pêndulo simples invertido":
+        st.markdown("### Questão 6: Controle em Malha Fechada e Estabilização")
+
+        st.markdown("##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n")
+        
+        st.warning("Os prints devem conter os inputs da simulação juntamente com as informações pedidas abaixo.")
+
         st.markdown("""
-                    Escrever ainda
-                    """)
-    
+a) Simule o sistema para um valor de K_feedback diferente de 0.00.
+
+a.1- Como fica a função de transferência em malha fechada do sistema?
+
+b) Plote a resposta do sistema em malha fechada para o mesmo K_feedback escolhido na simulação.
+
+c) Plote o mapa de polos e zeros e o lugar das raízes.
+
+c.1- Seria possível usar apenas o feedback e escolher, com a ajuda do lugar das raízes, um ganho adequado como estratégia de controle para estabilizar esse sistema? Justifique.
+
+c.2- Seria possível encontrar o menor valor de ganho K_feedback para fazer esse sistema ser estável?
+""")
+                
+        st.info(r"""A partir da equação caraterística do sistema em malha fechada:
+$$1 + K_{fb} G(s) = 0$$ 
+
+o que pode ser escrito como:
+
+$$1 + \frac{K_{fb} \cdot K_{ma} \cdot (s + z_1)(s + z_2)}{(s + p_1)(s + p_2)} = 0$$
+
+Desenvolvendo essa fórmula, se chega em:
+
+$K_{fb} \cdot K_{ma} \cdot (s + z_1)(s + z_2)+(s + p_1)(s + p_2) = 0$
+
+Assim, percebe-se que com K_feedback = 0, os polos do sistema em malha fechada são os mesmos do sistema em malha aberta, ou seja, o sistema é instável. 
+Já para K_feedback > 0, o sistema em malha fechada tem os polos deslocados assim como mostra o plote do lugar das raízes. Sendo assim, se em algum momento os polos cruzam o eixo imaginário, há um ganho K_fb que torna o sistema estável.
+""")
+
+        st.markdown("""
+d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Fechada.
+""")
+        
 def enunciado_questao7(type):
     if type == "Bola bastão":
         st.markdown("### Questão 7: Controle com PID")
@@ -284,8 +337,22 @@ def enunciado_questao7(type):
                     """)
         
     if type == "Pêndulo simples invertido":
+        st.markdown("### Questão 7: Controle com PID")
+
+        st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n
+                    """)
+
         st.markdown("""
-                    Escrever algo
+                    a) Simule o sistema com o controlador PID.\n
+                    a.1- Testando diferentes valores para os ganhos, foi possível achar uma resposta satisfatória? Se sim, quais são esses valores dos ganhos?\n
+                    b) Plote o gráfico Resposta em função de Kp.\n
+                    b.1 - Qual o impacto da variação de Kp na resposta do sistema?\n
+                    c) Plote o gráfico Resposta em função de Ki.\n
+                    c.1 - Qual o impacto da variação de Ki na resposta do sistema?\n
+                    d) Plote o gráfico Resposta em função de Kd.\n
+                    d.1 - Qual o impacto da variação de Kd na resposta do sistema?\n
+                    e) Dentre os melhores valores encontrados dos gráficos citados acima, seria possível aplicar esses valores em um sistema físico real? Justifique.\n
+                    f) De acordo com esses plotes dos polos e zeros e o lugar das raízes, o sistema é estável ou instável para os ganhos escolhidos? Justifique.\n
                     """)
 
 def enunciado_questao8(type):
@@ -307,8 +374,7 @@ def enunciado_questao10(type):
         st.markdown("### Questão 10: Simulação no Kit Real - Controle PID")
 
     if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 10: Simulação no Kit Real - Controle PID")
-    
+        st.markdown("### Questão 10: Simulação no Kit Real - Controle PID")   
     
 def plote_resposta_MA_Bola_Bastao(m, g, j, R, q):
 
@@ -378,12 +444,7 @@ def plote_resposta_MF_Bola_Bastao(m, g, j, R, K_feedback):
     t = np.linspace(0, 10, 1000)
     Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
     
-    # Gs = (K * Hs) / (1 + K * Hs)
-    Gs = ctl.feedback(K_feedback * Hs, 1)
-
-    # 2. Simulação da Resposta ao Degrau com magnitude K_feedback
-    # Multiplicamos a resposta por K_feedback para que o degrau não seja unitário
-    tout_MF, yout_MF = ctl.step_response(Gs, t)
+    tout_MF, yout_MF = ctl.step_response(K_feedback * Hs, t)
 
     # Vetor de Referência (Degrau de valor K_feedback)
     y_referencia = K_feedback * np.ones_like(t)
@@ -447,16 +508,12 @@ def plote_resposta_PID_Bola_Bastao(m, g, j, R, Kp, Ki, Kd):
     
     Hs = TransferFunction([m * g], [(m + j / R**2), 0, 0])
 
-    Gs = ctl.feedback(Hs, 1)
-
     C = Kp + Kd*s + Ki/s
-
-    sys = ctl.feedback(C * Gs, 1)
 
     # Criando a figura do Plotly
     fig = go.Figure()
         
-    t_out, y_out = ctl.step_response(sys, t)
+    t_out, y_out = ctl.step_response(C * Hs, t)
 
     fig.add_trace(go.Scatter(
         x=t, 
@@ -502,7 +559,7 @@ def plote_resposta_PID_Bola_Bastao(m, g, j, R, Kp, Ki, Kd):
 
 def plote_resposta_MA_Pendulo_simples_invertido(m, g, L, b, q_input):
 
-    Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+    Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
 
     u = q_input * np.ones(1001) 
     
@@ -562,15 +619,13 @@ def plote_resposta_MA_Pendulo_simples_invertido(m, g, L, b, q_input):
 
 def plote_resposta_MF_Pendulo_simples_invertido(m, g, L, b, K_feedback):
 
-    Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+    Hs = TransferFunction([3/m*L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
 
-    Gs = ctl.feedback(K_feedback * Hs, 1)
-
-    u = K_feedback * np.ones(1001) 
+    u = 0.1 * np.ones(1001)
     
     t = np.linspace(0, 5, 1001)
 
-    t_out, yout = ctl.forced_response(Gs, T=t, U=u)
+    t_out, yout = ctl.forced_response(K_feedback * Hs, T=t, U=u)
     
     fig = go.Figure()
 
@@ -623,19 +678,15 @@ def plote_resposta_MF_Pendulo_simples_invertido(m, g, L, b, K_feedback):
         st.plotly_chart(fig, use_container_width=True)
 
 def plote_resposta_PID_Pendulo_simples_invertido(m, g, L, b, Kp, Ki, Kd):
-    Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+    Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
 
     s = ctl.TransferFunction.s  # Operador de Laplace
 
-    Gs = ctl.feedback( Hs, 1)
-
     C = Kp + Kd*s + Ki/s
-
-    sys = ctl.feedback(C * Gs, 1)
     
     t = np.linspace(0, 5, 1001)
 
-    t_out, y_out = ctl.step_response(sys, t)
+    t_out, y_out = ctl.step_response(C * Hs, t)
     
     fig = go.Figure()
 
@@ -652,7 +703,7 @@ def plote_resposta_PID_Pendulo_simples_invertido(m, g, L, b, Kp, Ki, Kd):
     # Adicionando a Entrada Degrau (Referência)
     fig.add_trace(go.Scatter(
         x=t, 
-        y=np.ones(len(t)), 
+        y=0.1*np.ones(len(t)), 
         mode='lines',
         name='Referência (Degrau)',
         line=dict(color='green', width=2, dash='dash'),
@@ -696,10 +747,6 @@ def resposta_em_funcao_de_Kp(m, g, j, R):
     # 1. Definição da Planta (Hs) e Malha Fechada Base (Gs)
     # Hs = (m*g) / ((m + j/R^2)s^2)
     Hs = TransferFunction([m * g], [(m + j / R**2), 0, 0])
-    
-    # K_feedback unitário conforme seu código original
-    K_feedback = 1
-    Gs = ctl.feedback(K_feedback * Hs, 1)
 
     # 2. Configuração do Tempo
     t = np.linspace(0, 5, 1000)
@@ -720,10 +767,10 @@ def resposta_em_funcao_de_Kp(m, g, j, R):
     colors = ['green', 'blue', 'red', 'orange', 'purple']
     
     for Kp, col in zip(Kp_vals, colors):
-        # Controlador Proporcional C = Kp
-        # Aplicado sobre a malha Gs conforme seu código original
-        sys_cl = ctl.feedback(Kp * Gs, 1)
         
+        sys_cl = ctl.feedback(Kp * Hs, 1)
+        
+        # Segundo: Simula a resposta ao degrau no tempo 't'
         t_out, y_out = ctl.step_response(sys_cl, t)
         
         fig.add_trace(go.Scatter(
@@ -760,6 +807,70 @@ def resposta_em_funcao_de_Kp(m, g, j, R):
     # 6. Exibição no Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
+def resposta_pendulo_em_funcao_de_Kp(m, L, b, g):
+    # 1. Correção do Numerador (dividindo pela massa)
+    Hs = TransferFunction([3 / (m * L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
+
+    # 2. Configuração do Tempo (Note que no gráfico 2 o tempo vai até 50)
+    t = np.linspace(0, 50, 1000)
+    
+    # Criando a figura do Plotly
+    fig = go.Figure()
+
+    # Adicionando a Referência (Degrau Unitário)
+    fig.add_trace(go.Scatter(
+        x=t, 
+        y=np.ones(len(t)), 
+        mode='lines',
+        name='Referência (Degrau)',
+        line=dict(color='gray', width=2, dash='dash')
+    ))
+
+    Kp_vals = [5, 2, 1]
+    colors = ['green', 'blue', 'red', 'orange', 'purple']
+    
+    # 3. Conserto do Loop
+    for Kp, col in zip(Kp_vals, colors):
+        
+        sys_cl = ctl.feedback(Kp * Hs, 1)
+        
+        # Segundo: Simula a resposta ao degrau no tempo 't'
+        t_out, y_out = ctl.step_response(sys_cl, t)
+        
+        fig.add_trace(go.Scatter(
+            x=t_out, 
+            y=y_out, 
+            mode='lines',
+            name=f'Kp = {Kp}',
+            line=dict(color=col, width=2),
+            hovertemplate='Tempo: %{x:.2f}s<br>Saída: %{y:.4f}'
+        ))
+    # 5. Customização do Layout
+    fig.update_layout(
+        title=dict(
+            text="Respostas em Malha Fechada em função de Kp",
+            x=0.5,
+            xanchor='center'
+        ),
+        xaxis_title="Tempo (s)",
+        yaxis_title="Amplitude",
+        hovermode="x unified",
+        legend=dict(
+            yanchor="bottom",
+            y=0.01,
+            xanchor="right",
+            x=0.99,
+            bgcolor="rgba(255, 255, 255, 0.5)"
+        ),
+        template="plotly_white",
+        margin=dict(l=20, r=20, t=50, b=20),
+        height=500
+    )
+
+    # 6. Exibição no Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
+
 def resposta_em_funcao_de_Ki(m, g, j, R):
     """
     Plota a resposta em malha fechada para diferentes ganhos Ki, com Kp fixo.
@@ -773,10 +884,78 @@ def resposta_em_funcao_de_Ki(m, g, j, R):
     # 1. Definição da Planta (Hs) e Malha de Feedback Base (Gs)
     # Hs = (m*g) / ((m + j/R^2)s^2)
     Hs = TransferFunction([m * g], [(m + j / R**2), 0, 0])
+
+    # Criando a figura do Plotly
+    fig = go.Figure()
+
+    # 2. Adicionando a Referência (Degrau Unitário)
+    fig.add_trace(go.Scatter(
+        x=t, 
+        y=np.ones(len(t)), 
+        mode='lines',
+        name='Referência (Degrau)',
+        line=dict(color='gray', width=2, dash='dash')
+    ))
+
+    # 3. Loop para testar diferentes Ki_vals
+    colors = ['green', 'blue', 'red', 'yellow']
     
-    # K_feedback unitário conforme lógica anterior
-    K_feedback = 1
-    Gs = ctl.feedback(K_feedback * Hs, 1)
+    for Ki, col in zip(Ki_vals, colors):
+        # Controlador PI: C = Kp + Ki/s
+        # Se Ki for 0, o controlador é apenas Proporcional
+        if Ki == 0:
+            C = Kp_fixo
+        else:
+            C = Kp_fixo + (Ki / s)
+
+        sys_cl = ctl.feedback(C * Hs, 1)
+        
+        # Segundo: Simula a resposta ao degrau no tempo 't'
+        t_out, y_out = ctl.step_response(sys_cl, t)
+        
+        fig.add_trace(go.Scatter(
+            x=t_out, 
+            y=y_out, 
+            mode='lines',
+            name=f'Ki = {Ki} (Kp=1)',
+            line=dict(color=col, width=2),
+            hovertemplate='Tempo: %{x:.2f}s<br>Saída: %{y:.4f}'
+        ))
+
+    # 4. Customização do Layout
+    fig.update_layout(
+        title=dict(
+            text=f"Resposta em Malha Fechada: Efeito do Ganho Integral (Ki)",
+            x=0.5,
+            xanchor='center'
+        ),
+        xaxis_title="Tempo (s)",
+        yaxis_title="Amplitude",
+        hovermode="x unified",
+        legend=dict(
+            yanchor="bottom",
+            y=0.01,
+            xanchor="left",
+            x=0.01,
+            bgcolor="rgba(255, 255, 255, 0.5)"
+        ),
+        template="plotly_white",
+        margin=dict(l=20, r=20, t=50, b=20),
+        height=500
+    )
+
+    # 5. Exibição no Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
+def resposta_pendulo_em_funcao_de_Ki(m, L, b, g):
+    # Definindo a variável de Laplace s
+    Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
+
+    Kp_fixo = 1
+    Ki_vals = [5, 1, 0.05, 0]
+
+    t = np.linspace(0, 10, 10000)
+    s = ctl.TransferFunction.s  # Operador de Laplace
 
     # Criando a figura do Plotly
     fig = go.Figure()
@@ -801,11 +980,9 @@ def resposta_em_funcao_de_Ki(m, g, j, R):
         else:
             C = Kp_fixo + (Ki / s)
         
-        # Sistema em Malha Fechada: Feedback(C * Gs, 1)
-        sys_cl = ctl.feedback(C * Gs, 1)
-        
+        sys_cl = ctl.feedback(C * Hs, 1)
         t_out, y_out = ctl.step_response(sys_cl, t)
-        
+
         fig.add_trace(go.Scatter(
             x=t_out, 
             y=y_out, 
@@ -853,9 +1030,6 @@ def resposta_em_funcao_de_Kd(m, g, j, R):
     # 1. Definição da Planta (Hs)
     # Hs = (m*g) / ((m + j/R^2)s^2)
     Hs = TransferFunction([m * g], [(m + j / R**2), 0, 0])
-    
-    # Gs base conforme sua lógica (Feedback unitário da planta pura)
-    Gs = ctl.feedback(Hs, 1)
 
     # Criando a figura do Plotly
     fig = go.Figure()
@@ -876,11 +1050,7 @@ def resposta_em_funcao_de_Kd(m, g, j, R):
         # Controlador PD: C = Kp + Kd*s
         C = Kp_fixo + Kd * s
         
-        # Sistema em Malha Fechada: Feedback(C * Gs, 1)
-        # Nota: Se Gs já for malha fechada no seu código original, 
-        # C * Gs aplica o controle sobre esse sistema realimentado.
-        sys_cl = ctl.feedback(C * Gs, 1)
-        
+        sys_cl = ctl.feedback(C * Hs, 1)
         t_out, y_out = ctl.step_response(sys_cl, t)
         
         fig.add_trace(go.Scatter(
@@ -888,6 +1058,74 @@ def resposta_em_funcao_de_Kd(m, g, j, R):
             y=y_out, 
             mode='lines',
             name=f'Kd = {Kd} (Kp=3)',
+            line=dict(color=col, width=2),
+            hovertemplate='Tempo: %{x:.2f}s<br>Saída: %{y:.4f}'
+        ))
+
+    # 4. Customização do Layout
+    fig.update_layout(
+        title=dict(
+            text="Resposta em Malha Fechada: Efeito do Ganho Derivativo (Kd)",
+            x=0.5,
+            xanchor='center'
+        ),
+        xaxis_title="Tempo (s)",
+        yaxis_title="Posição (m)",
+        hovermode="x unified",
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="right",
+            x=0.99,
+            bgcolor="rgba(255, 255, 255, 0.5)"
+        ),
+        template="plotly_white",
+        margin=dict(l=20, r=20, t=50, b=20),
+        height=500
+    )
+
+    # 5. Exibição no Streamlit
+    st.plotly_chart(fig, use_container_width=True)
+
+def resposta_pendulo_em_funcao_de_Kd(m, L, b, g):
+    """
+    Plota a resposta em malha fechada para diferentes ganhos Kd, com Kp fixo.
+    """
+    # Configurações de ganhos e tempo
+    Kd_vals = [5, 1, 0.01, 0]
+    Kp_fixo = 1  # Conforme seu código original
+    t = np.linspace(0, 5, 1000)
+    s = ctl.TransferFunction.s  # Operador de Laplace
+    
+    Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
+    
+    # Criando a figura do Plotly
+    fig = go.Figure()
+
+    # 2. Adicionando a Referência (Degrau Unitário)
+    fig.add_trace(go.Scatter(
+        x=t, 
+        y=np.ones(len(t)), 
+        mode='lines',
+        name='Referência (Degrau)',
+        line=dict(color='gray', width=2, dash='dash')
+    ))
+
+    # 3. Loop para testar diferentes Kd_vals
+    colors = ['green', 'blue', 'red', 'yellow']
+    
+    for Kd, col in zip(Kd_vals, colors):
+        # Controlador PD: C = Kp + Kd*s
+        C = Kp_fixo + Kd * s
+
+        sys_cl = ctl.feedback(C * Hs, 1)
+        t_out, y_out = ctl.step_response(sys_cl, t)
+        
+        fig.add_trace(go.Scatter(
+            x=t_out, 
+            y=y_out, 
+            mode='lines',
+            name=f'Kd = {Kd} (Kp=1)',
             line=dict(color=col, width=2),
             hovertemplate='Tempo: %{x:.2f}s<br>Saída: %{y:.4f}'
         ))
@@ -931,25 +1169,23 @@ def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None,
     if type == "Bola bastão PID":
         s = ctl.TransferFunction.s
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     if type == "Pêndulo simples invertido MA":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         sys = Hs
 
     if type == "Pêndulo simples invertido MF":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         Gs = ctl.feedback(1*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
         s = ctl.TransferFunction.s
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     polo = ctl.poles(sys)
     st.write('Polos =', polo)
@@ -993,25 +1229,23 @@ def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=
     if type == "Bola bastão PID":
         s = ctl.TransferFunction.s
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     if type == "Pêndulo simples invertido MA":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         sys = Hs
 
     if type == "Pêndulo simples invertido MF":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         Gs = ctl.feedback(1*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
         s = ctl.TransferFunction.s
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     fig, ax = plt.subplots(figsize=(8, 4))
 
@@ -1054,25 +1288,23 @@ def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None, Ki
     if type == "Bola bastão PID":
         s = ctl.TransferFunction.s
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     if type == "Pêndulo simples invertido MA":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         sys = Hs
 
     if type == "Pêndulo simples invertido MF":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         Gs = ctl.feedback(1*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
         s = ctl.TransferFunction.s
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     # O segredo: Não criamos plt.subplots() manualmente antes.
     # O bode_plot cria a figura. Nós apenas a capturamos com plt.gcf() (get current figure).
@@ -1111,25 +1343,23 @@ def plote_nyquist(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None,
     if type == "Bola bastão PID":
         s = ctl.TransferFunction.s
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     if type == "Pêndulo simples invertido MA":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         sys = Hs
 
     if type == "Pêndulo simples invertido MF":
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         Gs = ctl.feedback(1*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
         s = ctl.TransferFunction.s
-        Hs = TransferFunction([3*m/L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
         C = Kp + Kd*s + Ki/s
-        sys = ctl.feedback(C * Gs, 1)
+        sys = ctl.feedback(C * Hs, 1)
 
     fig, ax = plt.subplots(figsize=(8, 4))
 
@@ -1141,10 +1371,6 @@ def plote_nyquist(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None,
     col2.pyplot(fig)
     
     plt.close(fig)
-    
-
-def baixar_relatorio_pendulo_simples():
-    st.write("Arrumar lógica")
 
 def get_ball_start_pos(L_beam, type, min_dist_pct=0.10):
                     if type == 'Aleatório':
@@ -1244,7 +1470,6 @@ def plot_resultado_simulacao_bola_bastao(dt, L, max_ang_alpha, ball_pos_history,
 
     st.plotly_chart(fig2, use_container_width=True)
 
-
 def plot_resultado_simulacao_pendulo(dt, lim_motor, erro_history, external_action_history, theta_history, theta_dot_history, 
                                      theta_double_dot_history, control_type_history):
     """
@@ -1323,4 +1548,3 @@ def plot_resultado_simulacao_pendulo(dt, lim_motor, erro_history, external_actio
     )
 
     st.plotly_chart(fig4, use_container_width=True)
-

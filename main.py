@@ -2,32 +2,315 @@ import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import sys
-import os
-import imageio
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
-from IPython.display import HTML
 import gymnasium as gym
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
-from src.utils import baixar_relatorio_pendulo_simples, get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao, plot_resultado_simulacao_pendulo
-from src.utils import enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10
-from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_resposta_MA_Pendulo_simples_invertido, plote_resposta_MF_Pendulo_simples_invertido, plote_resposta_PID_Pendulo_simples_invertido 
+from src.utils import get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao, plot_resultado_simulacao_pendulo
+from src.utils import enunciado_questao1, enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10
+from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_resposta_MA_Pendulo_simples_invertido, plote_resposta_MF_Pendulo_simples_invertido, plote_resposta_PID_Pendulo_simples_invertido
+from src.utils import resposta_pendulo_em_funcao_de_Kp, resposta_pendulo_em_funcao_de_Ki, resposta_pendulo_em_funcao_de_Kd
+import pygame
+import sys 
 from src.utils import plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
 from src.utils import resposta_em_funcao_de_Kp, resposta_em_funcao_de_Ki, resposta_em_funcao_de_Kd
-import plotly.graph_objects as go
 import requests
+import plotly.graph_objects as go
 
-ESP32_IP = "10.78.73.125"
+def pendulo_game(m, g, L, b, lim_motor):
+    pygame.init()
+    screen = pygame.display.set_mode((400, 400))
+    pygame.display.set_caption("Pêndulo Invertido - Controle Manual")
+    clock = pygame.time.Clock()
+    
+    # Fontes em tamanhos diferentes para o título e as instruções
+    font_title = pygame.font.SysFont(None, 48)
+    font_inst = pygame.font.SysFont(None, 36)
+    
+    # --- Tela inicial (Menu) ---
+    running = True
+    game_started = False
+    
+    while running and not game_started:
+        screen.fill((255, 255, 255))
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:  # Inicia ao apertar S
+                    game_started = True
+        
+        # Renderizar Título
+        title_text = font_title.render("Pêndulo - Pygame", True, (0, 0, 0))
+        title_rect = title_text.get_rect(center=(200, 100))
+        screen.blit(title_text, title_rect)
+        
+        # Renderizar Instruções (linhas separadas)
+        inst_1 = font_inst.render("A - horário", True, (50, 50, 50))
+        inst_2 = font_inst.render("S - start", True, (0, 150, 0)) # S em verde para destacar
+        inst_3 = font_inst.render("D - anti-horário", True, (50, 50, 50))
+        
+        # Centralizando as instruções
+        screen.blit(inst_1, inst_1.get_rect(center=(200, 180)))
+        screen.blit(inst_2, inst_2.get_rect(center=(200, 220)))
+        screen.blit(inst_3, inst_3.get_rect(center=(200, 260)))
+        
+        pygame.display.flip()
+        clock.tick(60)
+    
+    if not running:
+        pygame.quit()
+        return 0, [], []
+    
+    # --- Inicializar ambiente Gym para física ---
+    env = gym.make("Pendulum-v1", render_mode=None, g=g)
+    env.unwrapped.m = m
+    env.unwrapped.l = L
+    
+    state, _ = env.reset()  # Estado aleatório inicial
 
-def toggle_led():
-    try:
-        response = requests.get(f"http://{ESP32_IP}/toggle" )
-        if response.status_code == 200:
-            st.success(f"Comando enviado: {response.text}")
+    env.unwrapped.state = np.array([np.pi, 0.0]) 
+    
+    # Atualiza a variável 'state' para refletir a nova observação [cos, sin, dot]
+    state = env.unwrapped._get_obs()
+    
+    erro_history = []
+    torque_history = []
+    
+    frame = 0
+    max_frames = 150
+    length_pixels = 150  # Comprimento fixo do bastão em pixels
+    
+    # Configurações da barra de progresso
+    bar_x = 20
+    bar_y = 20
+    bar_max_width = 360
+    bar_height = 20
+    
+    # --- Loop do Jogo ---
+    while running and frame < max_frames:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        
+        keys = pygame.key.get_pressed()
+        torque = 0
+        
+        # Controles atualizados para A e D
+        if keys[pygame.K_d]:
+            torque = -lim_motor
+        elif keys[pygame.K_a]:
+            torque = lim_motor
+        
+        # Aplicar resistência (amortecimento)
+        theta_dot = state[2]
+        resistencia_torque = -b * theta_dot
+        action = [torque + resistencia_torque]
+        
+        state, reward, terminated, truncated, info = env.step(action)
+        
+        # O estado do Gymnasium é [cos(theta), sin(theta), theta_dot]
+        theta = np.arctan2(state[1], state[0])
+        erro = theta  # erro em relação a 0 (posição vertical para cima)
+        erro_history.append(erro)
+        torque_history.append(torque)
+        
+        # --- Desenhar na tela ---
+        screen.fill((255, 255, 255))
+        
+        # 1. Desenhar a barra de progresso
+        progress_ratio = frame / max_frames
+        current_bar_width = int(bar_max_width * progress_ratio)
+        
+        pygame.draw.rect(screen, (220, 220, 220), (bar_x, bar_y, bar_max_width, bar_height))
+        pygame.draw.rect(screen, (0, 0, 255), (bar_x, bar_y, current_bar_width, bar_height))
+        pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_max_width, bar_height), 2)
+        
+        # 2. Desenhar o pêndulo
+        center = (200, 200)
+        end_x = center[0] + length_pixels * np.sin(theta)
+        end_y = center[1] - length_pixels * np.cos(theta) 
+        
+        # Bastão
+        pygame.draw.line(screen, (0, 0, 0), center, (int(end_x), int(end_y)), 10) 
+        # Pino central
+        pygame.draw.circle(screen, (100, 100, 100), center, 5) 
+        
+        pygame.display.flip()
+        clock.tick(20)
+        frame += 1
+    
+    env.close()
+    pygame.quit()
+    
+    erro_medio = np.mean(np.abs(erro_history)) if erro_history else 0
+    return erro_medio, erro_history, torque_history
+
+def bola_bastao_game(m, g, j, R, L, max_ang_alpha):
+    pygame.init()
+    screen = pygame.display.set_mode((400, 400))
+    pygame.display.set_caption("Bola Bastão - Controle Manual")
+    clock = pygame.time.Clock()
+    
+    # Fontes
+    font_title = pygame.font.SysFont(None, 48)
+    font_inst = pygame.font.SysFont(None, 36)
+    
+    # --- Tela inicial (Menu) ---
+    running = True
+    game_started = False
+    
+    while running and not game_started:
+        screen.fill((255, 255, 255))
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_s:  # Inicia ao apertar S
+                    game_started = True
+        
+        # Renderizar Título
+        title_text = font_title.render("Bola Bastão Pygame", True, (0, 0, 0))
+        title_rect = title_text.get_rect(center=(200, 100))
+        screen.blit(title_text, title_rect)
+        
+        # Renderizar Instruções
+        inst_1 = font_inst.render("A - horário", True, (50, 50, 50))
+        inst_2 = font_inst.render("S - start", True, (0, 150, 0))
+        inst_3 = font_inst.render("D - anti-horário", True, (50, 50, 50))
+        
+        screen.blit(inst_1, inst_1.get_rect(center=(200, 180)))
+        screen.blit(inst_2, inst_2.get_rect(center=(200, 220)))
+        screen.blit(inst_3, inst_3.get_rect(center=(200, 260)))
+        
+        pygame.display.flip()
+        clock.tick(60)
+    
+    if not running:
+        pygame.quit()
+        return 0, [], []
+    
+    # --- Inicializar ambiente ---
+    env = BallBeamBalanceEnv(
+        timestep=0.05,
+        beam_length=L,
+        max_angle=max_ang_alpha,
+        init_velocity=0.0,
+        max_timesteps=500,
+        action_mode='continuous'
+    )
+    env.bb.g = g
+    env.bb.L = L
+    
+    state = env.reset()
+    if isinstance(state, tuple):
+        obs = state[0]
+    else:
+        obs = state
+    
+    # Posição inicial aleatória da bola
+    from src.utils import get_ball_start_pos
+    random_pos_val = get_ball_start_pos(L, type='Aleatório')
+    env.bb.x = random_pos_val
+    obs = list(obs)
+    obs[1] = random_pos_val
+    obs = np.array(obs)
+    
+    erro_history = []
+    torque_history = []
+    
+    frame = 0
+    max_frames = 150
+    length_pixels = 300  # Comprimento fixo do bastão em pixels
+    ball_radius_pixels = 15 # Tamanho fixo da bola, independente do parâmetro R
+    
+    # Barra de progresso
+    bar_x = 20
+    bar_y = 20
+    bar_max_width = 360
+    bar_height = 20
+    
+    # --- Loop do Jogo ---
+    while running and frame < max_frames:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+        
+        keys = pygame.key.get_pressed()
+        torque = 0
+        
+        if keys[pygame.K_d]:
+            torque = -max_ang_alpha
+        elif keys[pygame.K_a]:
+            torque = max_ang_alpha
+        
+        torque = np.clip(torque, -max_ang_alpha, max_ang_alpha)
+        
+        step_result = env.step(torque)
+        if len(step_result) == 5:
+            obs, reward, terminated, truncated, info = step_result
         else:
-            st.error(f"Erro ao enviar comando: {response.status_code} - {response.text}")
-    except requests.exceptions.ConnectionError:
-        st.error("Não foi possível conectar ao ESP32. Verifique o IP e a conexão Wi-Fi.")
+            obs, reward, done, info = step_result
+            terminated = done
+            truncated = False
+        
+        # Assumindo que obs[0] é o ângulo do bastão e obs[1] é a posição da bola
+        alpha = obs[0] 
+        ball_x = obs[1]
+        
+        erro = ball_x  # erro em relação a 0 (centro do bastão)
+        erro_history.append(erro)
+        torque_history.append(torque)
+        
+        # --- Desenhar ---
+        screen.fill((255, 255, 255))
+        
+        # 1. Barra de progresso
+        progress_ratio = frame / max_frames
+        current_bar_width = int(bar_max_width * progress_ratio)
+        pygame.draw.rect(screen, (220, 220, 220), (bar_x, bar_y, bar_max_width, bar_height))
+        pygame.draw.rect(screen, (0, 0, 255), (bar_x, bar_y, current_bar_width, bar_height))
+        pygame.draw.rect(screen, (0, 0, 0), (bar_x, bar_y, bar_max_width, bar_height), 2)
+        
+        # 2. Bastão Inclinado
+        center_x, center_y = 200, 250
+        half_L = length_pixels / 2
+        
+        # Coordenadas das pontas do bastão usando seno e cosseno
+        # O eixo Y no Pygame é invertido (cresce para baixo), por isso os sinais diferem
+        beam_start_x = center_x - half_L * np.cos(alpha)
+        beam_start_y = center_y + half_L * np.sin(alpha)
+        beam_end_x = center_x + half_L * np.cos(alpha)
+        beam_end_y = center_y - half_L * np.sin(alpha)
+        
+        pygame.draw.line(screen, (0, 0, 0), (beam_start_x, beam_start_y), (beam_end_x, beam_end_y), 8)
+        
+        # 3. Bola rotacionada
+        scale = length_pixels / L  # Escala para mapear posição física para pixels
+        d_pixels = ball_x * scale  # Distância da bola do centro do bastão em pixels
+        
+        # Calcula a posição da bola para que ela fique "apoiada" na linha, acompanhando a inclinação
+        ball_screen_x = center_x + d_pixels * np.cos(alpha) - ball_radius_pixels * np.sin(alpha)
+        ball_screen_y = center_y - d_pixels * np.sin(alpha) - ball_radius_pixels * np.cos(alpha)
+        
+        pygame.draw.circle(screen, (255, 0, 0), (int(ball_screen_x), int(ball_screen_y)), ball_radius_pixels)
+        
+        # Pino central do bastão (Opcional, ajuda a ver o eixo de rotação)
+        pygame.draw.circle(screen, (100, 100, 100), (center_x, center_y), 5)
+        
+        pygame.display.flip()
+        clock.tick(20)
+        frame += 1
+        
+        if terminated or truncated:
+            break
+    
+    env.close()
+    pygame.quit()
+    
+    erro_medio = np.mean(np.abs(erro_history)) if erro_history else 0
+    return erro_medio, erro_history, torque_history
 
 st.set_page_config(
     page_title="Controlpy",
@@ -37,7 +320,7 @@ st.set_page_config(
 
 sistema = st.sidebar.selectbox(
     "Escolha qual sistema deseja simular:",
-    ("Bola bastão", "Pêndulo simples invertido", "Pêndulo furuta")
+    ("Bola bastão", "Pêndulo simples invertido")
 )
 
 if sistema == "Bola bastão":
@@ -48,12 +331,12 @@ if sistema == "Bola bastão":
         st.image("sistema-ball-and-bean.png")
 
     st.sidebar.write("---")
-    with open("Roteiro Bola bastão.docx", "rb") as file:
+    with open("Arrumar - Roteiro Bola Bastão.docx", "rb") as file:
         btn = st.sidebar.download_button(
             label="Baixar Roteiro",
             icon="🚨",
             data=file,
-            file_name="Roteiro Bola bastão.docx",
+            file_name="Arrumar - Roteiro Bola Bastão.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     st.sidebar.write("---")
@@ -83,9 +366,42 @@ if sistema == "Bola bastão":
     st.sidebar.write("---")
 
     if parte_simulacao == "Questão 1":
-        st.warning("Conexão com a esp32")
-        if st.button("Liga/Desliga Led"):
-            toggle_led()
+
+        with st.expander("Enunciado Questão 1"):
+            enunciado_questao1(type="Bola bastão")
+
+        if st.button("Jogar Bola Bastão"):
+            erro_medio, erro_history, torque_history = bola_bastao_game(m, g, j, R, L, max_ang_alpha)
+            
+            fig = go.Figure()
+            
+            # Adicionando a linha do Erro
+            fig.add_trace(go.Scatter(
+                y=erro_history, 
+                mode='lines', 
+                name='Erro (m)',
+                line=dict(color='#2ca02c', width=2)
+            ))
+            
+            # Adicionando a linha do Torque (neste caso, é o ângulo de controle alpha)
+            fig.add_trace(go.Scatter(
+                y=torque_history, 
+                mode='lines', 
+                name='Torque (rad)',
+                line=dict(color='#d62728', width=2)
+            ))
+            
+            # Formatando o layout
+            fig.update_layout(
+                title=f"Desempenho da Bola Bastão | Erro médio: {erro_medio:.4f} m",
+                xaxis_title="Frames",
+                yaxis_title="Valores",
+                template="plotly_white",
+                hovermode="x unified"
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+            
         
     if parte_simulacao == "Questão 2":
 
@@ -298,8 +614,6 @@ if sistema == "Bola bastão":
         if st.sidebar.button("Plote o diagrama de Nyquist"):
             
             plote_nyquist(m=m, g=g, j=j, R=R, type="Bola bastão MA")
-
-
     
     if parte_simulacao == "Questão 6":
 
@@ -308,7 +622,7 @@ if sistema == "Bola bastão":
 
 
         st.sidebar.header("Inputs da Simulação")
-        K_feedback = st.sidebar.slider("Valor do ganho de feedback", min_value=-5.0, max_value=5.0, value=0.0, step=0.01, help=f"Valor de entrada é o K_feedback*erro [erro = referência (0 m) - posição atual da bolinha (x m)] ")
+        K_feedback = st.sidebar.slider("Valor do ganho de feedback", min_value=0.0, max_value=5.0, value=0.0, step=0.01, help=f"A entrada será -K_feedback * erro, onde erro é a diferença entre a posição desejada (0) e a posição atual da bola. K_feedback é o ganho que amplifica essa diferença para gerar a ação de controle. O menos se dá pois se o erro é negativo (bola a direita), a inclinação deve ser positiva e vice-versa.")
         init_velocity_input = st.sidebar.slider("Velocidade inicial da Bola", min_value=-1.0, max_value=1.0, value=0.0, step=0.01)
         opcoes_escolha_posicao = ["Aleatório", "Canto esquerdo", "Canto direito", "Centro"]
         escolha_posicao = st.sidebar.radio("Posição inicial da bola no bastão", 
@@ -336,7 +650,6 @@ if sistema == "Bola bastão":
             else:
                 obs = state
                     
-
             # --- MODIFICAÇÃO: POSIÇÃO INICIAL ALEATÓRIA ---
             if escolha_posicao == "Aleatório":
                 random_pos_val = get_ball_start_pos(L, type=escolha_posicao)
@@ -398,7 +711,7 @@ if sistema == "Bola bastão":
 
                 action = np.clip(action, -max_ang_alpha, max_ang_alpha)
 
-                action = -1 * action #aqui
+                action = -1 * action #aqui foi aplicado a inversão pois se o erro é negativo (bola a direita), a inclinação deve ser positiva e vice-versa, e a conta de K_feedback * erro não leva isso em consideração, então o sinal é invertido para corrigir isso.
 
                 action_history.append(action)
 
@@ -509,10 +822,10 @@ if sistema == "Bola bastão":
 
 
         st.sidebar.header("Inputs da Simulação")
-        Kp = st.sidebar.slider("Escolha um valor de Kp", min_value = -5.0, max_value = 5.0, value = 0.0, step = 0.1)
-        Ki = st.sidebar.slider("Escolha um valor de Ki", min_value = -5.0, max_value = 5.0, value = 0.0, step = 0.1)
-        Kd = st.sidebar.slider("Escolha um valor de Kd", min_value = -5.0, max_value = 5.0, value = 0.0, step = 0.1)
-        
+        Kp = st.sidebar.slider("Escolha um valor de Kp", min_value = 0.0, max_value = 5.0, value = 0.0, step = 0.1, help="Define a força de retorno imediata. Como Erro = -Posição, se a bola está na direita (Pos > 0), o erro é negativo. O controle aplica -Kp * Erro para gerar uma inclinação positiva e empurrar a bola de volta ao centro.")
+        Ki = st.sidebar.slider("Escolha um valor de Ki", min_value = 0.0, max_value = 5.0, value = 0.0, step = 0.1, help="Elimina o erro residual acumulado no tempo. Se a bola permanece à direita, o erro integral acumula valores negativos. A ação -Ki * Integral força uma inclinação positiva crescente para garantir que a bola chegue exatamente ao zero.")
+        Kd = st.sidebar.slider("Escolha um valor de Kd", min_value = 0.0, max_value = 5.0, value = 0.0, step = 0.1, help="Atua como um freio para evitar oscilações. Ele observa a velocidade da bola: se ela volta rápido para o centro, a derivada do erro é positiva. A ação -Kd * Derivada aplica uma inclinação oposta para amortecer o movimento e evitar o overshoot.")
+
         init_velocity_input = st.sidebar.slider("Velocidade inicial da Bola", min_value=-1.0, max_value=1.0, value=0.0, step=0.01)
         opcoes_escolha_posicao = ["Aleatório", "Canto esquerdo", "Canto direito", "Centro"]
         escolha_posicao = st.sidebar.radio("Posição inicial da bola no bastão", 
@@ -616,7 +929,7 @@ if sistema == "Bola bastão":
                 erro_integral += erro
                 erro_integral = np.clip(erro_integral, -10.0, 10.0)
 
-                action = Kp * erro + Kd * velocidade_bola + Ki * erro_integral
+                action = -Kp * erro - Kd * velocidade_bola - Ki * erro_integral #necessário inverter o sinal de Kp, Ki e Kd para que o controle atue na direção correta, pois o erro é calculado como 0 - posição da bola, então se a bola está à direita (posição positiva), o erro é negativo, e para empurrar a bola de volta ao centro, a inclinação deve ser positiva. O mesmo raciocínio se aplica para a velocidade da bola e o erro integral.
 
                 action = np.clip(action, -max_ang_alpha, max_ang_alpha)
 
@@ -723,8 +1036,7 @@ if sistema == "Bola bastão":
         if st.sidebar.button("Plote o diagrama de Nyquist"):
 
             plote_nyquist(m=m, g=g, j=j, R=R, type="Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
-
-        
+       
     if parte_simulacao == "Questão 8":
         enunciado_questao8(type="Bola bastão")
 
@@ -742,14 +1054,14 @@ if sistema == "Pêndulo simples invertido":
         col2.image("pendulum.png")
 
     st.sidebar.write("---")
-    # with open("Roteiro Pêndulo.docx", "rb") as file:
-    #     btn = st.sidebar.download_button(
-    #         label="Baixar Roteiro",
-    #         icon="🚨",
-    #         data=file,
-    #         file_name="Roteiro Pêndulo.docx",
-    #         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-    #     )
+    with open("Arrumar - Roteiro Pêndulo Simples Invertido.docx", "rb") as file:
+        btn = st.sidebar.download_button(
+            label="Baixar Roteiro",
+            icon="🚨",
+            data=file,
+            file_name="Arrumar - Roteiro Pêndulo Simples Invertido.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
     st.sidebar.write("---")
 
     parte_simulacao = st.sidebar.selectbox(
@@ -777,9 +1089,40 @@ if sistema == "Pêndulo simples invertido":
     torque_min_kgfcm = torque_min_N * 10.197
 
     if parte_simulacao == "Questão 1":
-        st.warning("Conexão com a esp32")
-        if st.button("Liga/Desliga Led"):
-            toggle_led()
+        with st.expander("Enunciado Questão 1"):
+            enunciado_questao1(type="Pêndulo simples invertido")
+
+        if st.button("Jogar Pêndulo"):
+            erro_medio, erro_history, torque_history = pendulo_game(m, g, L, b, lim_motor)
+            
+            fig = go.Figure()
+            
+            # Adicionando a linha do Erro
+            fig.add_trace(go.Scatter(
+                y=erro_history, 
+                mode='lines', 
+                name='Erro (rad)',
+                line=dict(color='#1f77b4', width=2)
+            ))
+            
+            # Adicionando a linha do Torque
+            fig.add_trace(go.Scatter(
+                y=torque_history, 
+                mode='lines', 
+                name='Torque (Nm)',
+                line=dict(color='#ff7f0e', width=2)
+            ))
+            
+            # Formatando o layout
+            fig.update_layout(
+                title=f"Desempenho do Pêndulo | Erro médio: {erro_medio:.4f} rad",
+                xaxis_title="Frames",
+                yaxis_title="Valores",
+                template="plotly_white",
+                hovermode="x unified" # Cria uma linha interativa ao passar o mouse
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
         
     if parte_simulacao == "Questão 2":
         enunciado_questao2(type="Pêndulo simples invertido")
@@ -799,11 +1142,6 @@ if sistema == "Pêndulo simples invertido":
         st.sidebar.header("Inputs da Simulação")
         swing_up_true = st.sidebar.checkbox("Controle com Swing-up?", value=True, help="Defina se a ação vai ser dividida para duas condições ou não, conforme descrito no enunciado.")
         q_input = st.sidebar.slider("Valor da entrada degrau", min_value=-lim_motor, max_value=lim_motor, value=0.0, step=0.005, help=f"Valor de entrada é o torque do motor indo de -{lim_motor} até {lim_motor} Nm")
-        #init_velocity_input = st.sidebar.slider("Velocidade inicial da Bola", min_value=-1.0, max_value=1.0, value=0.0, step=0.01)
-        #opcoes_escolha_posicao = ["Aleatório", "Canto esquerdo", "Canto direito", "Centro"]
-        #escolha_posicao = st.sidebar.radio("Posição inicial da bola no bastão", 
-        #                                          opcoes_escolha_posicao, help="Aleatório: A bola pode começar em qualquer ponto do bastão (mas não no centro e nem perto dele)." \
-        #                                          "\nCanto Esquerdo: A bola começa obrigatoriamente na extremidade esquerda.\nCanto Direito: A bola começa obrigatoriamente na extremidade direita.")
 
         if st.sidebar.button("Simular"):
 
@@ -975,7 +1313,7 @@ if sistema == "Pêndulo simples invertido":
         st.sidebar.write("---")
         st.sidebar.header("Plots")
 
-        if st.sidebar.button("Plote resposta ao degrau"):
+        if st.sidebar.button("Plote resposta em MA"):
             
             plote_resposta_MA_Pendulo_simples_invertido(m, g, L, b, q_input)
         
@@ -1002,8 +1340,8 @@ if sistema == "Pêndulo simples invertido":
 
         # --- Inputs do Usuário ---
         st.sidebar.header("Inputs da Simulação")
-        swing_up_true = st.sidebar.checkbox("Controle com Swing-up?", value=True, help="Defina se a ação vai ser dividida para duas condições ou não, conforme descrito no enunciado.")
-        K_feedback = st.sidebar.slider("Valor do ganho de feedback", min_value=-lim_motor, max_value=lim_motor, value=0.0, step=0.005, help=f"Valor de entrada é o ganho de feedback * erro (erro = 0 - theta) indo de -{lim_motor} até {lim_motor} Nm")
+        swing_up_true = st.sidebar.checkbox("Controle com Swing-up?", value=True, help="Defina se a ação vai ser dividida para duas condições ou não, conforme descrito no enunciado da questão 5.")
+        K_feedback = st.sidebar.slider("Valor do ganho de feedback", min_value=0.0, max_value=lim_motor, value=0.0, step=0.005, help=f"Valor de entrada é o ganho de feedback * erro (erro = 0 - theta) indo de -{lim_motor} até {lim_motor} Nm")
 
         if st.sidebar.button("Simular"):
 
@@ -1179,7 +1517,7 @@ if sistema == "Pêndulo simples invertido":
         st.sidebar.write("---")
         st.sidebar.header("Plots")
 
-        if st.sidebar.button("Plote resposta ao degrau"):
+        if st.sidebar.button("Plote resposta em MF"):
             
             plote_resposta_MF_Pendulo_simples_invertido(m, g, L, b, K_feedback)
         
@@ -1208,9 +1546,9 @@ if sistema == "Pêndulo simples invertido":
         st.sidebar.header("Inputs da Simulação")
         swing_up_true = st.sidebar.checkbox("Controle com Swing-up?", value=True, help="Defina se a ação vai ser dividida para duas condições ou não, conforme descrito no enunciado.")
         st.sidebar.header("Inputs da Simulação")
-        Kp = st.sidebar.slider("Escolha um valor de Kp", min_value = -lim_motor, max_value = lim_motor, value = 0.0, step = 0.01)
-        Ki = st.sidebar.slider("Escolha um valor de Ki", min_value = -lim_motor, max_value = lim_motor, value = 0.0, step = 0.01)
-        Kd = st.sidebar.slider("Escolha um valor de Kd", min_value = -lim_motor, max_value = lim_motor, value = 0.0, step = 0.01)
+        Kp = st.sidebar.slider("Escolha um valor de Kp", min_value = 0.0, max_value = lim_motor, value = 0.0, step = 0.01)
+        Ki = st.sidebar.slider("Escolha um valor de Ki", min_value = 0.0, max_value = lim_motor, value = 0.0, step = 0.01)
+        Kd = st.sidebar.slider("Escolha um valor de Kd", min_value = 0.0, max_value = lim_motor, value = 0.0, step = 0.01)
 
         if st.sidebar.button("Simular"):
 
@@ -1397,9 +1735,17 @@ if sistema == "Pêndulo simples invertido":
         st.sidebar.write("---")
         st.sidebar.header("Plots")
 
-        if st.sidebar.button("Plote resposta ao degrau"):
-    
-            plote_resposta_PID_Pendulo_simples_invertido(m, g, L, b, Kp, Ki, Kd)
+        if st.sidebar.button("Plote resposta em função de Kp"):
+            
+            resposta_pendulo_em_funcao_de_Kp(m, L, b, g)
+
+        if st.sidebar.button("Plote resposta em função de Ki"):
+            
+            resposta_pendulo_em_funcao_de_Ki(m, L, b, g)
+
+        if st.sidebar.button("Plote resposta em função de Kd"):
+            
+            resposta_pendulo_em_funcao_de_Kd(m, L, b, g)
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
@@ -1408,14 +1754,6 @@ if sistema == "Pêndulo simples invertido":
         if st.sidebar.button("Plote o lugar das raízes"):
             
             plote_lugar_raizes(m=m, g=g, L=L, b=b, Kp=Kp, Ki=Ki, Kd=Kd, type= "Pêndulo simples invertido PID")
-
-        if st.sidebar.button("Plote o diagrama de Bode"):
-            
-            plote_bode(m=m, g=g, L=L, b=b, Kp=Kp, Ki=Ki, Kd=Kd, type= "Pêndulo simples invertido PID")
-
-        if st.sidebar.button("Plote o diagrama de Nyquist"):
-            
-            plote_nyquist(m=m, g=g, L=L, b=b, Kp=Kp, Ki=Ki, Kd=Kd, type= "Pêndulo simples invertido PID")
 
     if parte_simulacao == "Questão 8":
         enunciado_questao8(type="Pêndulo simples invertido")

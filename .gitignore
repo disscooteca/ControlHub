@@ -1,0 +1,24 @@
+# 1. Ambientes Virtuais (MUITO IMPORTANTE)
+# O ambiente virtual tem milhares de arquivos pesados. Cada pessoa deve criar o seu próprio.
+.venv/
+venv/
+
+# 2. Arquivos de Build/Executáveis do PyInstaller
+# As pastas build e dist são geradas automaticamente quando você compila o .exe. Não devem ir pro GitHub.
+build/
+dist/
+
+# 3. Cache do Python
+# Arquivos que o Python gera para rodar mais rápido localmente.
+__pycache__/
+*.pyc
+*.pyo
+
+# 4. Arquivos Pessoais e Temporários
+# Telas capturadas perdidas na pasta
+Captura de tela *.png
+
+# (Opcional) Notas e Documentos de Texto
+# Se você não quiser que seus rascunhos do TCC e anotações vão para o repositório de código, descomente as linhas abaixo tirando a hashtag:
+# Anotacoes.txt
+# *.docx
