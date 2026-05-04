@@ -2,7 +2,7 @@
 from PyInstaller.utils.hooks import collect_all
 from PyInstaller.utils.hooks import copy_metadata
 
-datas = [('main.py', '.'), ('src/utils.py', 'src')]
+datas = [('main.py', '.'), ('src/utils.py', 'src'), ('*.png', '.'), ('*.docx', '.'), ('.streamlit', '.streamlit')]
 binaries = []
 hiddenimports = []
 datas += copy_metadata('streamlit')

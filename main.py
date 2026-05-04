@@ -11,7 +11,7 @@ from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bast
 from src.utils import resposta_pendulo_em_funcao_de_Kp, resposta_pendulo_em_funcao_de_Ki, resposta_pendulo_em_funcao_de_Kd
 import pygame
 import sys 
-from src.utils import plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
+from src.utils import obter_caminho_arquivo, plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
 from src.utils import resposta_em_funcao_de_Kp, resposta_em_funcao_de_Ki, resposta_em_funcao_de_Kd
 import requests
 import plotly.graph_objects as go
@@ -328,18 +328,22 @@ if sistema == "Bola bastão":
     st.title("Simulação do Sistema Bola e Bastão", text_alignment= 'center')
 
     with st.expander("Representação do sistema Bola e Bastão"):
-        st.image("sistema-ball-and-bean.png")
+        col1, col2, col3 = st.columns([1, 4, 1])
+        caminho_imagem = obter_caminho_arquivo("sistema-ball-and-bean.png")
+        col2.image(caminho_imagem)
 
     st.sidebar.write("---")
-    with open("Arrumar - Roteiro Bola Bastão.docx", "rb") as file:
+    caminho_roteiro = obter_caminho_arquivo("Arrumar - Roteiro Bola Bastão.docx")
+
+    with open(caminho_roteiro, "rb") as file:
         btn = st.sidebar.download_button(
             label="Baixar Roteiro",
             icon="🚨",
             data=file,
-            file_name="Arrumar - Roteiro Bola Bastão.docx",
+            file_name="Arrumar - Roteiro Bola Bastão.docx", # Você pode mudar o nome final do arquivo aqui se quiser tirar o "Arrumar -"
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
-    st.sidebar.write("---")
+    st.sidebar.write("---") 
 
     # --- Parâmetros do Sistema (fixos para esta simulação) ---
     m = 0.01  # Massa da bola em KG
@@ -601,19 +605,19 @@ if sistema == "Bola bastão":
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
-            plote_mapa_polos_zeros(m=m, g=g, j=j, R=R, type= "Bola bastão MA")
+            plote_mapa_polos_zeros(m=m, g=g, j=j, R=R, k_MA=q_input, type= "Bola bastão MA")
 
         if st.sidebar.button("Plote o lugar das raízes"):
             
-            plote_lugar_raizes(m=m, g=g, j=j, R=R, type= "Bola bastão MA")
+            plote_lugar_raizes(m=m, g=g, j=j, R=R, k_MA=q_input, type= "Bola bastão MA")
 
         if st.sidebar.button("Plote o diagrama de Bode"):
             
-            plote_bode(m=m, g=g, j=j, R=R, type= "Bola bastão MA")
+            plote_bode(m=m, g=g, j=j, R=R, k_MA=q_input, type= "Bola bastão MA")
 
         if st.sidebar.button("Plote o diagrama de Nyquist"):
             
-            plote_nyquist(m=m, g=g, j=j, R=R, type="Bola bastão MA")
+            plote_nyquist(m=m, g=g, j=j, R=R, k_MA=q_input, type="Bola bastão MA")
     
     if parte_simulacao == "Questão 6":
 
@@ -735,7 +739,7 @@ if sistema == "Bola bastão":
                     truncated = False
 
                 if terminated or truncated:
-                    st.warning(f"Simulação encerrada no passo {i} (Bola caiu ou limite de tempo atingido).")
+                    st.info(f"Simulação encerrada no passo {i}.")
                     break
             
             plt.close(fig_render)
@@ -801,19 +805,19 @@ if sistema == "Bola bastão":
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
-            plote_mapa_polos_zeros(m=m, g=g, j=j, R=R, type="Bola bastão MF")
+            plote_mapa_polos_zeros(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o lugar das raízes"):
             
-            plote_lugar_raizes(m=m, g=g, j=j, R=R, type="Bola bastão MF")
+            plote_lugar_raizes(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o diagrama de Bode"):
             
-            plote_bode(m=m, g=g, j=j, R=R, type="Bola bastão MF")
+            plote_bode(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o diagrama de Nyquist"):
             
-            plote_nyquist(m=m, g=g, j=j, R=R, type="Bola bastão MF")
+            plote_nyquist(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
 
     if parte_simulacao == "Questão 7":
 
@@ -926,10 +930,10 @@ if sistema == "Bola bastão":
 
                 velocidade_bola = obs[2]
 
-                erro_integral += erro
+                erro_integral += erro * 0.01 #colocando uma lógica de dt para o erro integral não subir muito rápido
                 erro_integral = np.clip(erro_integral, -10.0, 10.0)
 
-                action = -Kp * erro - Kd * velocidade_bola - Ki * erro_integral #necessário inverter o sinal de Kp, Ki e Kd para que o controle atue na direção correta, pois o erro é calculado como 0 - posição da bola, então se a bola está à direita (posição positiva), o erro é negativo, e para empurrar a bola de volta ao centro, a inclinação deve ser positiva. O mesmo raciocínio se aplica para a velocidade da bola e o erro integral.
+                action = -Kp * erro + Kd * velocidade_bola - Ki * erro_integral #necessário inverter o sinal de Kp, Ki e Kd para que o controle atue na direção correta, pois o erro é calculado como 0 - posição da bola, então se a bola está à direita (posição positiva), o erro é negativo, e para empurrar a bola de volta ao centro, a inclinação deve ser positiva. O mesmo raciocínio se aplica para a velocidade da bola e o erro integral.
 
                 action = np.clip(action, -max_ang_alpha, max_ang_alpha)
 
@@ -945,7 +949,7 @@ if sistema == "Bola bastão":
                     truncated = False
 
                 if terminated or truncated:
-                    st.warning(f"Simulação encerrada no passo {i} (Bola caiu ou limite de tempo atingido).")
+                    st.info(f"Simulação encerrada no passo {i}.")
                     break
             
             plt.close(fig_render)
@@ -1051,15 +1055,18 @@ if sistema == "Pêndulo simples invertido":
 
     with st.expander("Representação do sistema Pêndulo Simples Invertido"):
         col1, col2, col3 = st.columns([2, 1, 2])
-        col2.image("pendulum.png")
+        caminho_imagem = obter_caminho_arquivo("pendulum.png")
+        col2.image(caminho_imagem)
 
     st.sidebar.write("---")
-    with open("Arrumar - Roteiro Pêndulo Simples Invertido.docx", "rb") as file:
+    caminho_roteiro = obter_caminho_arquivo("Arrumar - Roteiro Pêndulo Simples Invertido.docx")
+
+    with open(caminho_roteiro, "rb") as file:
         btn = st.sidebar.download_button(
             label="Baixar Roteiro",
             icon="🚨",
             data=file,
-            file_name="Arrumar - Roteiro Pêndulo Simples Invertido.docx",
+            file_name="Arrumar - Roteiro Pêndulo Simples Invertido.docx", # Você pode mudar o nome final do arquivo aqui se quiser tirar o "Arrumar -"
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     st.sidebar.write("---")
@@ -1218,6 +1225,7 @@ if sistema == "Pêndulo simples invertido":
                 theta_double_dot_history.append(theta_2dot)
 
                 if terminated or truncated:
+                    st.info(f"Simulação encerrada no passo {i}.")
                     break
 
             env.close()
@@ -1319,19 +1327,19 @@ if sistema == "Pêndulo simples invertido":
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
-            plote_mapa_polos_zeros(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MA")
+            plote_mapa_polos_zeros(m=m, g=g, L=L, b=b, k_MA=q_input, type= "Pêndulo simples invertido MA")
 
         if st.sidebar.button("Plote o lugar das raízes"):
             
-            plote_lugar_raizes(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MA")
+            plote_lugar_raizes(m=m, g=g, L=L, b=b, k_MA=q_input, type= "Pêndulo simples invertido MA")
 
         if st.sidebar.button("Plote o diagrama de Bode"):
             
-            plote_bode(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MA")
+            plote_bode(m=m, g=g, L=L, b=b, k_MA=q_input, type= "Pêndulo simples invertido MA")
 
         if st.sidebar.button("Plote o diagrama de Nyquist"):
             
-            plote_nyquist(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MA")
+            plote_nyquist(m=m, g=g, L=L, b=b, k_MA=q_input, type= "Pêndulo simples invertido MA")
 
     if parte_simulacao == "Questão 6":
 
@@ -1422,6 +1430,7 @@ if sistema == "Pêndulo simples invertido":
                 theta_double_dot_history.append(theta_2dot)
 
                 if terminated or truncated:
+                    st.info(f"Simulação encerrada no passo {i}.")
                     break
 
             env.close()
@@ -1523,19 +1532,19 @@ if sistema == "Pêndulo simples invertido":
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
-            plote_mapa_polos_zeros(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MF")
+            plote_mapa_polos_zeros(m=m, g=g, L=L, b=b, k_feedback=K_feedback, type= "Pêndulo simples invertido MF")
 
         if st.sidebar.button("Plote o lugar das raízes"):
             
-            plote_lugar_raizes(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MF")
+            plote_lugar_raizes(m=m, g=g, L=L, b=b, k_feedback=K_feedback, type= "Pêndulo simples invertido MF")
 
         if st.sidebar.button("Plote o diagrama de Bode"):
             
-            plote_bode(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MF")
+            plote_bode(m=m, g=g, L=L, b=b, k_feedback=K_feedback, type= "Pêndulo simples invertido MF")
 
         if st.sidebar.button("Plote o diagrama de Nyquist"):
             
-            plote_nyquist(m=m, g=g, L=L, b=b, type= "Pêndulo simples invertido MF")
+            plote_nyquist(m=m, g=g, L=L, b=b, k_feedback=K_feedback, type= "Pêndulo simples invertido MF")
 
     if parte_simulacao == "Questão 7":
 
@@ -1594,10 +1603,14 @@ if sistema == "Pêndulo simples invertido":
                         erro = (0 - theta)
                         erro_history.append(erro)
 
-                        erro_integral += erro
-                        erro_integral = np.clip(erro_integral, -10.0, 10.0) #Não permite que a integral cresça infinitamente
+                        dt_sim = env.unwrapped.dt 
 
-                        torque = +Kp * theta + Kd * theta_dot + Ki * erro_integral
+                        erro_integral += erro * dt_sim 
+                        erro_integral = np.clip(erro_integral, -10.0, 10.0)
+
+                        erro_derivativo = (0 - theta_dot)
+
+                        torque = (Kp * erro) + (Kd * erro_derivativo) + (Ki * erro_integral)
                         torque = np.clip(torque, -lim_motor, lim_motor)
                         external_action_history.append(torque)
                         resistencia_torque = -b * theta_dot
@@ -1623,10 +1636,14 @@ if sistema == "Pêndulo simples invertido":
                     erro = (0 - theta)
                     erro_history.append(erro)
 
-                    erro_integral += erro
-                    erro_integral = np.clip(erro_integral, -10.0, 10.0) #Não permite que a integral cresça infinitamente
+                    dt_sim = env.unwrapped.dt 
 
-                    torque = +Kp * theta + Kd * theta_dot + Ki * erro_integral
+                    erro_integral += erro * dt_sim 
+                    erro_integral = np.clip(erro_integral, -10.0, 10.0)
+
+                    erro_derivativo = (0 - theta_dot)
+
+                    torque = (Kp * erro) + (Kd * erro_derivativo) + (Ki * erro_integral)
                     torque = np.clip(torque, -lim_motor, lim_motor)
                     external_action_history.append(torque)
                     resistencia_torque = -b * theta_dot
@@ -1640,6 +1657,7 @@ if sistema == "Pêndulo simples invertido":
                 theta_double_dot_history.append(theta_2dot)
 
                 if terminated or truncated:
+                    st.info(f"Simulação encerrada no passo {i}.")
                     break
 
             env.close()

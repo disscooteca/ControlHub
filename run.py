@@ -13,7 +13,6 @@ import requests
 from control import (TransferFunction)
 from matplotlib.lines import Line2D
 import pygame
-import sys 
 
 def resolve_path(path):
     # Esta função garante que o arquivo seja encontrado tanto rodando

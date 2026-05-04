@@ -6,27 +6,41 @@ from control import (TransferFunction)
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import requests
+import sys
+import os
+
+def obter_caminho_arquivo(nome_arquivo):
+    """
+    Retorna o caminho absoluto do ficheiro.
+    Funciona tanto no ambiente de desenvolvimento como no .exe compilado.
+    """
+    if hasattr(sys, '_MEIPASS'):
+        # Se estiver a correr pelo .exe, procura na pasta temporária
+        return os.path.join(sys._MEIPASS, nome_arquivo)
+    
+    # Se estiver a correr no VS Code, procura na pasta normal
+    return os.path.join(os.path.abspath("."), nome_arquivo)
 
 def enunciado_questao1(type):
     if type == "Bola bastão":
         st.markdown("### Questão 1: Bola Bastão - Pygame")
 
         st.markdown(f"""
-        Cada aluno deverá do grupo deverá jogar o jogo da bola bastão desenvolvido em Pygame e coletar os dados da partida.
+        Cada aluno do grupo deverá jogar o jogo da bola bastão desenvolvido em Pygame e coletar os dados da partida.
         """)
 
-        st.info("Quem obtiver o menor erro médio vence!")
+        st.info("O objetivo é deixar a bola no meio do bastão. Quem obtiver o menor erro médio vence!")
 
-        st.warning("⚠️ A run não vale se a bolinha cair do bastão.")
+        st.warning("⚠️ A tentativa não vale se a bolinha cair do bastão.")
 
     if type == "Pêndulo simples invertido":
         st.markdown("### Questão 1: Pêndulo Simples Invertido - Pygame")
 
         st.markdown(f"""
-        Cada aluno deverá do grupo deverá jogar o jogo do pêndulo simples invertido desenvolvido em Pygame e coletar os dados da partida.
+        Cada aluno do grupo deverá jogar o jogo do pêndulo simples invertido desenvolvido em Pygame e coletar os dados da partida.
         """)
 
-        st.info("Quem obtiver o menor erro médio vence!")
+        st.info("O objetivo é manter o pêndulo em posição vertical para cima. Quem obtiver o menor erro médio vence!")
 
 def enunciado_questao2(type):
     if type == "Bola bastão":
@@ -67,9 +81,9 @@ def enunciado_questao2(type):
         * **$\ddot{{\\theta}}$**: aceleração angular (rad/s²)
         * **$m$**: massa do bastão (kg)
         * **$L$**: comprimento do bastão (m)
-        * **$g$**: aceleração da gravidade (m/s²)
+        * **$g$**: aceleração da gravidade (m/s²)   
         * **$b$**: coeficiente de viscosidade (N·m·s/rad)
-        * **$I$**: momento de inércia do bastão de comprimento L e massa m distribuida uniformemente ($m \cdot L^2 / 3$)
+        * **$I$**: momento de inércia do bastão de comprimento L e massa m distribuída uniformemente ($m \cdot L^2 / 3$)
         * **$\\mathcal{{T}}_{{ext}}$**: torque externo aplicado pelo motor (N·m)
         """)
 
@@ -153,8 +167,8 @@ def enunciado_questao3(type):
         st.markdown("### Questão 3: Estabilidade e a Aproximação Linear")
 
         st.markdown(r"""
-            Caso solte essa haste em qualquer posição que não seja ela perfeitamente alinhada para cima de forma que não haja 
-            torque causado pela gravidade, o que acontecerá com ela? Considerando esse fato e que o desejado é que a 
+            Caso solte essa haste em qualquer posição que não seja ela perfeitamente alinhada para cima de forma, posição essa em que não há  
+            torque causado pela gravidade, o que acontecerá com a bolinha? Considerando esse fato e que o desejado é que a 
             haste fique para cima, qual é um grande problema em se considerar sen(theta) aproximadamente igual a theta?
         """)
 
@@ -222,10 +236,10 @@ def enunciado_questao4(type, L=None, d=None):
                     diâmetro= 2cm\n 
                     densidade_haste = 1.25g/cm³ \n 
                     gravidade = 9.81m/s²\n
-                    Qual o torque mínimo em Nm necessário que o motor precisa ter para conseguir dar uma volta completa com essa haste estando acoplado em uma de suas extremidades se desconsiderarmos o amortecimento viscoso?
+                    Qual o torque mínimo em Nm necessário que o motor precisa ter para conseguir dar uma volta completa com essa haste estando acoplado em uma de suas extremidades se desconsiderarmos o amortecimento viscoso (atrito)?
                     """)
         
-        st.info("💡 **Dica:** A força da gravidade é aplicada na metade do comprimento L. Ademais, não use a aproximação $sen(\\theta) \\approx \\theta$ neste caso.")
+        st.info("💡 **Dica:** Considere que a força da gravidade é aplicada na metade do comprimento L. Ademais, não use a aproximação $sen(\\theta) \\approx \\theta$ neste caso.")
 
 def enunciado_questao5(type):
     if type == "Bola bastão":
@@ -237,7 +251,7 @@ def enunciado_questao5(type):
         st.warning("Os prints devem conter os inputs da simulação juntamente com as informações pedidas abaixo.")
 
         st.markdown("""
-                    a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs a sua escolha.\n
+                    a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs à sua escolha.\n
                     b) Plote a resposta ao degrau para o mesmo degrau escolhido na simulação.\n
                     c) Plote o mapa de polos e zeros e o lugar das raízes e justifique o porquê do sistema ser instável para qualquer degrau colocado na entrada.\n
                     d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Aberta.
@@ -265,11 +279,11 @@ def enunciado_questao6(type):
         st.warning("Os prints devem conter os inputs da simulação juntamente com as informações pedidas abaixo.")
 
         st.markdown("""
-                    a) Simule o sistema para um valor de K_feedback diferente de 0.00 e demais inputs a sua escolha.\n
+                    a) Simule o sistema para um valor de K_feedback diferente de 0.00 e demais inputs à sua escolha.\n
                     a.1- Já que essa simulação não considera o atrito na bolinha, quanto tempo demoraria para o sistema se estabilizar?\n
                     b) Plote a resposta do sistema em malha fechada para o mesmo K_feedback escolhido na simulação.\n
                     c) Plote o mapa de polos e zeros e o lugar das raízes.\n
-                    c.1- De acordo com esses plotes, o sistema é estável ou instável para o ganho escolhido?\n
+                    c.1- De acordo com esses plots, o sistema é estável ou instável para o ganho escolhido?\n
                     c.2- Seria possível usar apenas o feedback e escolher, com a ajuda do lugar das raízes, um ganho adequado como estratégia de controle para estabilizar esse sistema?
                     Justifique.\n
                     d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Fechada.
@@ -291,7 +305,7 @@ b) Plote a resposta do sistema em malha fechada para o mesmo K_feedback escolhid
 
 c) Plote o mapa de polos e zeros e o lugar das raízes.
 
-c.1- Seria possível usar apenas o feedback e escolher, com a ajuda do lugar das raízes, um ganho adequado como estratégia de controle para estabilizar esse sistema? Justifique.
+c.1- Seria possível, para a fase de catch (quando o pêndulo está na zona de linearização), usar apenas o feedback e escolher, com a ajuda do lugar das raízes, um ganho adequado como estratégia de controle para estabilizar esse sistema? Justifique.
 
 c.2- Seria possível encontrar o menor valor de ganho K_feedback para fazer esse sistema ser estável?
 """)
@@ -332,7 +346,7 @@ def enunciado_questao7(type):
                     d) Plote o gráfico Resposta em função de Kd.\n
                     d.1 - Qual o impacto da variação de Kd na resposta do sistema?\n
                     e) Selecione os melhores valores dos ganhos que você encontrou e plote o mapa de polos e zeros e o lugar das raízes.\n
-                    c.1- De acordo com esses plotes, o sistema é estável ou instável para os ganhos escolhidos?\n
+                    c.1- De acordo com esses plots, o sistema é estável ou instável para os ganhos escolhidos?\n
                     f) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema controlado por PID.
                     """)
         
@@ -352,7 +366,7 @@ def enunciado_questao7(type):
                     d) Plote o gráfico Resposta em função de Kd.\n
                     d.1 - Qual o impacto da variação de Kd na resposta do sistema?\n
                     e) Dentre os melhores valores encontrados dos gráficos citados acima, seria possível aplicar esses valores em um sistema físico real? Justifique.\n
-                    f) De acordo com esses plotes dos polos e zeros e o lugar das raízes, o sistema é estável ou instável para os ganhos escolhidos? Justifique.\n
+                    f) De acordo com esses plots dos polos e zeros e o lugar das raízes, o sistema é estável ou instável para os ganhos escolhidos? Justifique.\n
                     """)
 
 def enunciado_questao8(type):
@@ -438,13 +452,13 @@ def plote_resposta_MA_Bola_Bastao(m, g, j, R, q):
 
 def plote_resposta_MF_Bola_Bastao(m, g, j, R, K_feedback):
 
-    st.warning("⚠️ Simulação usa K negativo e o referencial teórico é K positivo.")
-
     # 1. Definição do Sistema e Malha Fechada
     t = np.linspace(0, 10, 1000)
     Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
+
+    Gs = ctl.feedback(K_feedback*Hs, 1)
     
-    tout_MF, yout_MF = ctl.step_response(K_feedback * Hs, t)
+    tout_MF, yout_MF = ctl.step_response(Gs, t)
 
     # Vetor de Referência (Degrau de valor K_feedback)
     y_referencia = K_feedback * np.ones_like(t)
@@ -512,8 +526,10 @@ def plote_resposta_PID_Bola_Bastao(m, g, j, R, Kp, Ki, Kd):
 
     # Criando a figura do Plotly
     fig = go.Figure()
+
+    Gs = ctl.feedback(C*Hs, 1)
         
-    t_out, y_out = ctl.step_response(C * Hs, t)
+    t_out, y_out = ctl.step_response(Gs, t)
 
     fig.add_trace(go.Scatter(
         x=t, 
@@ -527,7 +543,7 @@ def plote_resposta_PID_Bola_Bastao(m, g, j, R, Kp, Ki, Kd):
         x=t_out, 
         y=y_out, 
         mode='lines',
-        name=f'Kd = {Kd} (Kp=3)',
+        name=f'Kp={Kp}, Ki={Ki}, Kd={Kd}',
         line=dict(color="purple", width=2),
         hovertemplate='Tempo: %{x:.2f}s<br>Saída: %{y:.4f}'
     ))
@@ -686,7 +702,9 @@ def plote_resposta_PID_Pendulo_simples_invertido(m, g, L, b, Kp, Ki, Kd):
     
     t = np.linspace(0, 5, 1001)
 
-    t_out, y_out = ctl.step_response(C * Hs, t)
+    Gs = ctl.feedback(C*Hs, 1)
+
+    t_out, y_out = ctl.step_response(Gs, t)
     
     fig = go.Figure()
 
@@ -1155,15 +1173,15 @@ def resposta_pendulo_em_funcao_de_Kd(m, L, b, g):
     # 5. Exibição no Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
-def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None, Ki=None, Kd=None):
+def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
         Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Bola bastão MF":
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs #só para encaixar nos demais
 
     if type == "Bola bastão PID":
@@ -1174,11 +1192,11 @@ def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None,
 
     if type == "Pêndulo simples invertido MA":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Pêndulo simples invertido MF":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
@@ -1215,15 +1233,15 @@ def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None,
     
     plt.close(fig)
 
-def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None, Ki=None, Kd=None):
+def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None,Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
         Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Bola bastão MF":
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs #só para encaixar nos demais
 
     if type == "Bola bastão PID":
@@ -1234,11 +1252,11 @@ def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=
 
     if type == "Pêndulo simples invertido MA":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Pêndulo simples invertido MF":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
@@ -1274,15 +1292,15 @@ def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=
     
     plt.close(fig)
 
-def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None, Ki=None, Kd=None):
+def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
         Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Bola bastão MF":
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs #só para encaixar nos demais
 
     if type == "Bola bastão PID":
@@ -1293,11 +1311,11 @@ def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None, Ki
 
     if type == "Pêndulo simples invertido MA":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Pêndulo simples invertido MF":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
@@ -1329,15 +1347,15 @@ def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None, Ki
     # Importante limpar para não acumular na memória ou bugar o próximo gráfico
     plt.close(fig)
 
-def plote_nyquist(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None, Ki=None, Kd=None):
+def plote_nyquist(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
         Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Bola bastão MF":
         Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs #só para encaixar nos demais
 
     if type == "Bola bastão PID":
@@ -1348,11 +1366,11 @@ def plote_nyquist(type, m=None, g=None, j=None, R=None, L=None, b=None, Kp=None,
 
     if type == "Pêndulo simples invertido MA":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        sys = Hs
+        sys = k_MA * Hs
 
     if type == "Pêndulo simples invertido MF":
         Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
-        Gs = ctl.feedback(1*Hs, 1)
+        Gs = ctl.feedback(k_feedback*Hs, 1)
         sys = Gs
 
     if type == "Pêndulo simples invertido PID":
