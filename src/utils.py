@@ -9,6 +9,7 @@ import requests
 import sys
 import os
 
+
 def obter_caminho_arquivo(nome_arquivo):
     """
     Retorna o caminho absoluto do ficheiro.
@@ -46,6 +47,8 @@ def enunciado_questao2(type):
     if type == "Bola bastão":
         st.markdown("### Questão 2: Modelagem e Função de Transferência")
 
+        st.markdown("a)")
+
         st.markdown(f"""
         sendo:\n
                     a: aceleração (m/s²)
@@ -71,8 +74,32 @@ def enunciado_questao2(type):
         st.markdown("""
         **Pergunta:** \n\nComo obter a função de transferência considerando a entrada como o seno do ângulo do bastão $(sen(alpha))$ e a saída sendo a posição da bola ($x$)?      
         """)
+
+        st.markdown("b)")
+
+        st.markdown(r"""
+        Considerando que $b = \frac{m*g}{m+\frac{J}{R^2}}$, como fica a função de transferência em malha aberta?
+        """)
+
+        st.markdown("c)")
+
+        st.markdown(r"""
+        Considerando que $G_{mf} = \frac{G}{1 + G}$, como fica a função de transferência em malha fechada tendo como G a função de malha aberta da questão (b)?
+        """)
+
+        st.markdown("d)")
+
+        st.markdown(r"""
+        A forma generalizada de se calcular a função de transferência em malha fechada considera um controlador C(s) em série com a planta e a realimentação como sendo H(s), obtendo assim:
+        $G_{mf} = \frac{C(s)*G(s)}{1 + C(s)*G(s)*H(s)}$. Pensando no comportamento do sistema, como devem ser os valores de C(s) e H(s)?
+        """)
+
+        st.info("💡 **Dica:** Considere o exemplo da bolinha estando a direita do ponto de referência, o erro, que é desejado - atual, será negativo e isso deve mandar um sinal positivo para o motor, uma vez que ele precisa de inclinação positiva para movimentar a bola para a esqueda")
+
     if type == "Pêndulo simples invertido":
         st.markdown("### Questão 2: Modelagem e Função de Transferência")
+
+        st.markdown("a)")
 
         st.markdown(f"""
         sendo:\n
@@ -97,7 +124,7 @@ def enunciado_questao2(type):
         st.info("💡 **Dica:** Utilize a aproximação para pequenos ângulos onde $\operatorname{sen}(\\theta) \\approx \\theta$ para linearizar o sistema.")
 
         st.markdown(r"""
-        **Pergunta:** Como obter a **função de transferência** $G(s) = \frac{\Theta(s)}{\mathcal{T}_{ext}(s)}$ , sendo a entrada como o torque externo e a saída como o ângulo $\theta$?
+        **Pergunta:** Como obter a **função de transferência** em malha aberta $G(s) = \frac{\Theta(s)}{\mathcal{T}_{ext}(s)}$ , sendo a entrada como o torque externo e a saída como o ângulo $\theta$?
         """)
 
 def enunciado_questao3(type):
@@ -243,7 +270,50 @@ def enunciado_questao4(type, L=None, d=None):
 
 def enunciado_questao5(type):
     if type == "Bola bastão":
-        st.markdown("### Questão 5: Sistema em Malha Aberta")
+        st.markdown("### Questão 5: Resposta no tempo para o sistema em Malha fechada")
+
+        st.markdown("a)\n")
+
+        st.markdown("Sabendo que a frequência natural e o fator de amortecimento de um sistema de segunda ordem pode ser obtido através de:\n")
+
+        st.latex(r"T(s) = \frac{ganho}{s^2 + 2\zeta\omega_ns + \omega_n^2}")
+
+        st.markdown("Quais são esses valores para a função de transferência em malha fechada do pêndulo simples invertido? O que eles dizem sobre a resposta do sistema?")
+
+        st.info(r"💡 *Dica:** Considere $G_{mf} = \frac{b}{s^2+b}$ e $b = \frac{mg}{m+\frac{J}{R^2}}$ pois $C(s) = -1$")
+
+        st.markdown("b)\n")
+
+        st.markdown("A partir das fórmulas descritas a seguir, calcule  o tempo de acomodação, o tempo de pico, o tempo de subida, a ultrapassagem percentual e a frequência natural amortecida. Ademais, explique o que cada um desses parâmetros significa.\n")
+        st.latex(r"T_s(2\%) = \frac{4}{\zeta \cdot \omega_n}")
+        st.latex(r"T_p = \frac{\pi}{\omega_d} = \frac{\pi}{\omega_n \sqrt{1-\zeta^2}}")
+        st.latex(r"T_r \approx \frac{1.8}{\omega_n}")
+        st.latex(r"\%UP = e^{-\left(\frac{\zeta\pi}{\sqrt{1-\zeta^2}}\right)} \times 100")
+        st.latex(r"\omega_d = \omega_n \sqrt{1 - \zeta^2}")
+
+    if type == "Pêndulo simples invertido":
+        st.markdown("### Questão 5: Resposta no tempo para o sistema em Malha fechada")
+
+        st.markdown("a)\n")
+
+        st.markdown("Sabendo que a frequência natural e o fator de amortecimento de um sistema de segunda ordem pode ser obtido através de:\n")
+
+        st.latex(r"T(s) = \frac{ganho}{s^2 + 2\zeta\omega_ns + \omega_n^2}")
+
+        st.markdown("Quais são esses valores para a função de transferência em malha fechada do pêndulo simples invertido? O que eles dizem sobre a resposta do sistema?")
+
+        st.markdown("b)\n")
+
+        st.markdown("A partir das fórmulas descritas a seguir, calcule  o tempo de acomodação, o tempo de pico, o tempo de subida, a ultrapassagem percentual e a frequência natural amortecida. Ademais, explique o que cada um desses parâmetros significa.\n")
+        st.latex(r"T_s(2\%) = \frac{4}{\zeta \cdot \omega_n}")
+        st.latex(r"T_p = \frac{\pi}{\omega_d} = \frac{\pi}{\omega_n \sqrt{1-\zeta^2}}")
+        st.latex(r"T_r \approx \frac{1.8}{\omega_n}")
+        st.latex(r"\%UP = e^{-\left(\frac{\zeta\pi}{\sqrt{1-\zeta^2}}\right)} \times 100")
+        st.latex(r"\omega_d = \omega_n \sqrt{1 - \zeta^2}")
+
+def enunciado_questao6(type):
+    if type == "Bola bastão":
+        st.markdown("### Questão 6: Sistema em Malha Aberta")
 
         st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n
                     """)
@@ -253,6 +323,7 @@ def enunciado_questao5(type):
         st.markdown("""
                     a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs à sua escolha.\n
                     b) Plote a resposta ao degrau para o mesmo degrau escolhido na simulação.\n
+                    b.1 - Qual o motivo da resposta ao degrau estar diferente (se o valor escolhido for positivo a resposta vai para o menos infinito e vice-versa)?\n
                     c) Plote o mapa de polos e zeros e o lugar das raízes e justifique o porquê do sistema ser instável para qualquer degrau colocado na entrada.\n
                     d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Aberta.
                     """)
@@ -269,19 +340,22 @@ Para contornar esse problema e conseguir levantar o pêndulo a partir da sua pos
 * **Controle Híbrido:** Explique o motivo de a simulação utilizar duas zonas de controle distintas: a fase de balanço (*Swing-up*) e a fase de estabilização (*Catching*, ou "captura").
 """)
 
-def enunciado_questao6(type):
+def enunciado_questao7(type):
     if type == "Bola bastão":
-        st.markdown("### Questão 6: Sistema em Malha Fechada")
+        st.markdown("### Questão 7: Sistema em Malha Fechada")
 
         st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n
                     """)
         
         st.warning("Os prints devem conter os inputs da simulação juntamente com as informações pedidas abaixo.")
 
+
+        st.error("A resposta da questão 2 se resume ao valor de C(s) ser negativo pois isso faz com que a saída tenha resposta com sinal oposto da entrada e isso vai ser incrementado já nas simulações e plotes. Ou seja, nesta e nas próximas questões, se você colocar um valor de K positivo será computado internamente como negativo.")
+        
         st.markdown("""
                     a) Simule o sistema para um valor de K_feedback diferente de 0.00 e demais inputs à sua escolha.\n
                     a.1- Já que essa simulação não considera o atrito na bolinha, quanto tempo demoraria para o sistema se estabilizar?\n
-                    b) Plote a resposta do sistema em malha fechada para o mesmo K_feedback escolhido na simulação.\n
+                    b) Plote a resposta do sistema em malha fechada para o mesmo K_feedback escolhido na simulação. Além disso, plote também a resposta no tempo.\n
                     c) Plote o mapa de polos e zeros e o lugar das raízes.\n
                     c.1- De acordo com esses plots, o sistema é estável ou instável para o ganho escolhido?\n
                     c.2- Seria possível usar apenas o feedback e escolher, com a ajuda do lugar das raízes, um ganho adequado como estratégia de controle para estabilizar esse sistema?
@@ -290,7 +364,7 @@ def enunciado_questao6(type):
                     """)
         
     if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 6: Controle em Malha Fechada e Estabilização")
+        st.markdown("### Questão 7: Controle em Malha Fechada e Estabilização")
 
         st.markdown("##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n")
         
@@ -301,7 +375,7 @@ a) Simule o sistema para um valor de K_feedback diferente de 0.00.
 
 a.1- Como fica a função de transferência em malha fechada do sistema?
 
-b) Plote a resposta do sistema em malha fechada para o mesmo K_feedback escolhido na simulação.
+b) Plote a resposta do sistema em malha fechada para o mesmo K_feedback escolhido na simulação. Plote também a resposta no tempo.
 
 c) Plote o mapa de polos e zeros e o lugar das raízes.
 
@@ -329,9 +403,9 @@ Já para K_feedback > 0, o sistema em malha fechada tem os polos deslocados assi
 d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Fechada.
 """)
         
-def enunciado_questao7(type):
+def enunciado_questao8(type):
     if type == "Bola bastão":
-        st.markdown("### Questão 7: Controle com PID")
+        st.markdown("### Questão 8: Controle com PID")
 
         st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório. Coloque os inputs da simulaçao no mesmo print dos gráficos de desempenho.\n
                     """)
@@ -345,13 +419,14 @@ def enunciado_questao7(type):
                     c.1 - Qual o impacto da variação de Ki na resposta do sistema?\n
                     d) Plote o gráfico Resposta em função de Kd.\n
                     d.1 - Qual o impacto da variação de Kd na resposta do sistema?\n
-                    e) Selecione os melhores valores dos ganhos que você encontrou e plote o mapa de polos e zeros e o lugar das raízes.\n
-                    c.1- De acordo com esses plots, o sistema é estável ou instável para os ganhos escolhidos?\n
-                    f) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema controlado por PID.
+                    e) Plote a respota no tempo do sistema.\n
+                    f) Selecione os melhores valores dos ganhos que você encontrou e plote o mapa de polos e zeros e o lugar das raízes.\n
+                    f.1- De acordo com esses plots, o sistema é estável ou instável para os ganhos escolhidos?\n
+                    g) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema controlado por PID.
                     """)
         
     if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 7: Controle com PID")
+        st.markdown("### Questão 8: Controle com PID")
 
         st.markdown("""##### Faça as simulações indicadas nas questões abaixo e cole os prints no relatório.\n
                     """)
@@ -365,34 +440,35 @@ def enunciado_questao7(type):
                     c.1 - Qual o impacto da variação de Ki na resposta do sistema?\n
                     d) Plote o gráfico Resposta em função de Kd.\n
                     d.1 - Qual o impacto da variação de Kd na resposta do sistema?\n
-                    e) Dentre os melhores valores encontrados dos gráficos citados acima, seria possível aplicar esses valores em um sistema físico real? Justifique.\n
-                    f) De acordo com esses plots dos polos e zeros e o lugar das raízes, o sistema é estável ou instável para os ganhos escolhidos? Justifique.\n
+                    e) Plote a resposta no tempo do sistema.\n
+                    f) Dentre os melhores valores encontrados dos gráficos citados acima, seria possível aplicar esses valores em um sistema físico real? Justifique.\n
+                    g) De acordo com esses plots dos polos e zeros e o lugar das raízes, o sistema é estável ou instável para os ganhos escolhidos? Justifique.\n
                     """)
-
-def enunciado_questao8(type):
-    if type == "Bola bastão":
-        st.markdown("### Questão 8: Simulação no Kit Real - Malha Aberta")
-
-    if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 8: Simulação no Kit Real - Malha Aberta")
 
 def enunciado_questao9(type):
     if type == "Bola bastão":
-        st.markdown("### Questão 9: Simulação no Kit Real - Malha Fechada")
+        st.markdown("### Questão 9: Simulação no Kit Real - Malha Aberta")
 
     if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 9: Simulação no Kit Real - Malha Fechada")
+        st.markdown("### Questão 9: Simulação no Kit Real - Malha Aberta")
 
 def enunciado_questao10(type):
     if type == "Bola bastão":
-        st.markdown("### Questão 10: Simulação no Kit Real - Controle PID")
+        st.markdown("### Questão 10: Simulação no Kit Real - Malha Fechada")
 
     if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 10: Simulação no Kit Real - Controle PID")   
+        st.markdown("### Questão 10: Simulação no Kit Real - Malha Fechada")
+
+def enunciado_questao11(type):
+    if type == "Bola bastão":
+        st.markdown("### Questão 11: Simulação no Kit Real - Controle PID")
+
+    if type == "Pêndulo simples invertido":
+        st.markdown("### Questão 11: Simulação no Kit Real - Controle PID")   
     
 def plote_resposta_MA_Bola_Bastao(m, g, j, R, q):
 
-    Hs = TransferFunction([m*g], [(m + j/R**2), 0, 0])
+    Hs = TransferFunction([-m*g], [(m + j/R**2), 0, 0])
 
     u = q * np.ones(1001) 
     
@@ -635,13 +711,15 @@ def plote_resposta_MA_Pendulo_simples_invertido(m, g, L, b, q_input):
 
 def plote_resposta_MF_Pendulo_simples_invertido(m, g, L, b, K_feedback):
 
-    Hs = TransferFunction([3/m*L**2], [1, 3*b/(m*L**2), -3*g/(2*L)])
+    Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
 
-    u = 0.1 * np.ones(1001)
+    Hs_MF = ctl.feedback(K_feedback * Hs, 1)
+
+    u = K_feedback * np.ones(1001)
     
     t = np.linspace(0, 5, 1001)
 
-    t_out, yout = ctl.forced_response(K_feedback * Hs, T=t, U=u)
+    t_out, yout = ctl.forced_response(Hs_MF, T=t, U=u)
     
     fig = go.Figure()
 
@@ -1173,10 +1251,110 @@ def resposta_pendulo_em_funcao_de_Kd(m, L, b, g):
     # 5. Exibição no Streamlit
     st.plotly_chart(fig, use_container_width=True)
 
+def plote_resposta_no_tempo(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
+
+    if type == "Bola bastão MF":
+        Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
+        Gs = ctl.feedback(k_feedback*Hs, 1)
+        sys = Gs
+
+    if type == "Bola bastão PID":
+        s = ctl.TransferFunction.s
+        Hs = TransferFunction([m*g], [(m+j/R**2), 0, 0])
+        C = Kp + Kd*s + Ki/s
+        sys = ctl.feedback(C * Hs, 1)
+
+    if type == "Pêndulo simples invertido MF":
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        Gs = ctl.feedback(k_feedback*Hs, 1)
+        sys = Gs
+
+    if type == "Pêndulo simples invertido PID":
+        s = ctl.TransferFunction.s
+        Hs = TransferFunction([3/(m*L**2)], [1, 3*b/(m*L**2), -3*g/(2*L)])
+        C = Kp + Kd*s + Ki/s
+        sys = ctl.feedback(C * Hs, 1)
+
+    wn, zeta, polos = ctl.damp(sys, doprint=False)
+    wn_sistema = wn[0]
+    zeta_sistema = zeta[0]
+        
+    # --- 3. Simulação Numérica no Tempo ---
+    tempo_simulacao = 10
+    t = np.linspace(0, tempo_simulacao, 1001)  
+    u = np.ones(1001)  
+    t_out, y_out = ctl.forced_response(sys, U=u, T=t)
+
+    # Valor de Regime Permanente Real simulado
+    y_inf = ctl.dcgain(sys)
+    if np.isinf(y_inf) or np.isnan(y_inf):
+        y_inf = y_out[-1]
+
+    # --- CÁLCULO NUMÉRICO REAL DOS PARÂMETROS (Baseado na curva real) ---
+    # 1. Valor de Pico e Tempo de Pico extraídos direto do vetor simulado
+    idx_pico = np.argmax(y_out)
+    y_pico_real = y_out[idx_pico]
+    tp_real = t_out[idx_pico]
+
+    # Calcular Sobressinal Real baseado no comportamento prático da curva
+    if y_pico_real > y_inf and y_inf > 0:
+        up_porcentagem_real = ((y_pico_real - y_inf) / y_inf) * 100
+    else:
+        up_porcentagem_real = 0.0
+
+    # Condição real: Se passou da linha de regime por mais de 0.5%, o gráfico deve mostrar os indicadores de pico
+    sistema_oscilou_na_pratica = (up_porcentagem_real > 0.5)
+
+    # 2. Tempo de Acomodação Numérico (Critério de 2%)
+    limite_superior = y_inf * 1.02
+    limite_inferior = y_inf * 0.98
+    fora_da_faixa = np.where((y_out > limite_superior) | (y_out < limite_inferior))[0]
+    
+    if len(fora_da_faixa) > 0 and fora_da_faixa[-1] < len(t_out) - 1:
+        ts_real = t_out[fora_da_faixa[-1]]
+    else:
+        ts_real = t_out[0] 
+
+    # 3. Tempo de Subida Numérico (Instante em que cruza a linha de regime pela 1ª vez)
+    idx_subida = np.where(y_out >= y_inf)[0]
+    if len(idx_subida) > 0:
+        tr_real = t_out[idx_subida[0]]
+    else:
+        tr_real = 1.8 / wn_sistema # Fallback teórico caso seja lento demais e não cruze nos 10s
+
+    # --- 4. Construção do Gráfico no Matplotlib ---
+    fig = plt.figure(figsize=(11, 6)) 
+
+    plt.plot(t_out, y_out, "k", linewidth=2, label="Resposta ao Degrau")
+    plt.axhline(y_inf, color="b", linestyle="--", alpha=0.5, label=f"Regime Permanente ($y_\\infty$ = {y_inf:.2f})")
+    plt.axhline(1.0, color="g", linestyle=":", alpha=0.5, label="Referência (Degrau Unitário)")
+
+    # Exibição inteligente dos indicadores baseada no comportamento prático do gráfico
+    if sistema_oscilou_na_pratica:
+        plt.axvline(tp_real, color="r", linestyle="--", alpha=0.7, label=f"Tempo de Pico ($T_p$ = {tp_real:.2f} s)")
+        plt.plot(tp_real, y_pico_real, "ro", label=f"Pico Máximo ($y_{{max}}$ = {y_pico_real:.2f} | %UP = {up_porcentagem_real:.1f}%)")
+        
+    # Tempo de acomodação e subida sempre existem e são plotados
+    plt.axvline(ts_real, color="purple", linestyle="--", alpha=0.7, label=f"Tempo de Acomodação ($T_s$ = {ts_real:.2f} s)")
+    plt.plot(ts_real, y_inf, "purple", marker="X", markersize=8, linestyle="None")
+
+    plt.axvline(tr_real, color="orange", linestyle="--", alpha=0.7, label=f"Tempo de Subida ($T_r \\approx$ {tr_real:.2f} s)")
+    plt.title(f"Análise Dinâmica para t={tempo_simulacao}: {type}\n($\\omega_n$ = {wn_sistema:.2f} rad/s | $\\zeta$ = {zeta_sistema:.3f})", fontsize=12)
+    plt.xlabel("Tempo (s)")
+    plt.ylabel("Resposta do Sistema y(t)")
+    plt.xlim(0, max(t_out))
+
+    plt.legend(loc="lower right", shadow=True, framealpha=0.9)
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+
+    # --- 5. Renderização no Streamlit ---
+    st.pyplot(fig)
+
 def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":
@@ -1236,7 +1414,7 @@ def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None,
 def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None,Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":
@@ -1295,7 +1473,7 @@ def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, k_M
 def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":
@@ -1350,7 +1528,7 @@ def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None
 def plote_nyquist(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":

@@ -13,6 +13,7 @@ import requests
 from control import (TransferFunction)
 from matplotlib.lines import Line2D
 import pygame
+import bleak, asyncio
 
 def resolve_path(path):
     # Esta função garante que o arquivo seja encontrado tanto rodando

@@ -6,7 +6,7 @@ Usando Python 3.10 pois a biblioteca do git (pip install git+https://github.com/
 pip install control
 pip install gymnasium[classic_control] moviepy
 
-pyinstaller --clean --log-level=DEBUG --onefile --name "Controlpy" --icon "app_icon.ico" --collect-all streamlit --collect-all pygame --collect-all gymnasium --copy-metadata streamlit --copy-metadata pandas --add-data "main.py;." --add-data "src/utils.py;src" --add-data "*.png;." --add-data "*.docx;." --add-data ".streamlit;.streamlit" run.py
+pyinstaller --clean --log-level=DEBUG --onefile --name "ControlHub" --icon "app_icon.ico" --collect-all streamlit --collect-all pygame --collect-all gymnasium --copy-metadata streamlit --copy-metadata pandas --add-data "main.py;." --add-data "src/utils.py;src" --add-data "*.png;." --add-data "*.docx;." --add-data ".streamlit;.streamlit" run.py
 
 #MVC
 

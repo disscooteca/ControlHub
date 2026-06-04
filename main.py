@@ -5,10 +5,12 @@ import matplotlib.animation as animation
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
 import gymnasium as gym
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
-from src.utils import get_ball_start_pos, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao, plot_resultado_simulacao_pendulo
-from src.utils import enunciado_questao1, enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10
+from src.utils import get_ball_start_pos, plote_resposta_no_tempo, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao, plot_resultado_simulacao_pendulo
+from src.utils import enunciado_questao1, enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10, enunciado_questao11
 from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_resposta_MA_Pendulo_simples_invertido, plote_resposta_MF_Pendulo_simples_invertido, plote_resposta_PID_Pendulo_simples_invertido
 from src.utils import resposta_pendulo_em_funcao_de_Kp, resposta_pendulo_em_funcao_de_Ki, resposta_pendulo_em_funcao_de_Kd
+from src.connect import send_command, read_status, scan_and_connect
+import asyncio
 import pygame
 import sys 
 from src.utils import obter_caminho_arquivo, plote_mapa_polos_zeros, plote_lugar_raizes, plote_bode, plote_nyquist
@@ -313,7 +315,7 @@ def bola_bastao_game(m, g, j, R, L, max_ang_alpha):
     return erro_medio, erro_history, torque_history
 
 st.set_page_config(
-    page_title="Controlpy",
+    page_title="ControlHub",
     page_icon="⚙️",
     layout="wide" 
 )
@@ -364,7 +366,7 @@ if sistema == "Bola bastão":
 
     parte_simulacao = st.sidebar.selectbox(
         "Selecione a questão da simulação",
-        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10")
+        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10", "Questão 11")
     )
 
     st.sidebar.write("---")
@@ -421,8 +423,12 @@ if sistema == "Bola bastão":
 
     if parte_simulacao == "Questão 5":
 
-        with st.expander("Enunciado Questão 5"):
-            enunciado_questao5(type="Bola bastão")
+        enunciado_questao5(type="Bola bastão")
+
+    if parte_simulacao == "Questão 6":
+
+        with st.expander("Enunciado Questão 6"):
+            enunciado_questao6(type="Bola bastão")
 
         # --- Inputs do Usuário ---
         st.sidebar.header("Inputs da Simulação")
@@ -619,10 +625,10 @@ if sistema == "Bola bastão":
             
             plote_nyquist(m=m, g=g, j=j, R=R, k_MA=q_input, type="Bola bastão MA")
     
-    if parte_simulacao == "Questão 6":
+    if parte_simulacao == "Questão 7":
 
-        with st.expander("Enunciado Questão 6"):
-            enunciado_questao6(type = "Bola bastão")
+        with st.expander("Enunciado Questão 7"):
+            enunciado_questao7(type = "Bola bastão")
 
 
         st.sidebar.header("Inputs da Simulação")
@@ -802,9 +808,13 @@ if sistema == "Bola bastão":
         if st.sidebar.button("Plote resposta em MF"):
             
             plote_resposta_MF_Bola_Bastao(m, g, j, R, K_feedback)
+
+        if st.sidebar.button("Plote resposta no tempo em função de K_feedback"):
+
+            plote_resposta_no_tempo(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
-            
+            st.wrie("")
             plote_mapa_polos_zeros(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o lugar das raízes"):
@@ -819,10 +829,10 @@ if sistema == "Bola bastão":
             
             plote_nyquist(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
 
-    if parte_simulacao == "Questão 7":
+    if parte_simulacao == "Questão 8":
 
-        with st.expander("Enunciado Questão 7"):
-            enunciado_questao7(type="Bola bastão")
+        with st.expander("Enunciado Questão 8"):
+            enunciado_questao8(type="Bola bastão")
 
 
         st.sidebar.header("Inputs da Simulação")
@@ -1025,6 +1035,11 @@ if sistema == "Bola bastão":
             
             plote_resposta_PID_Bola_Bastao(m, g, j, R, Kp, Ki, Kd)
 
+        if st.sidebar.button("Plote resposta no tempo em função de Kp, Ki e Kd"):
+
+            plote_resposta_no_tempo(m=m, g=g, j=j, R=R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
+
+
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
             plote_mapa_polos_zeros(m=m, g=g, j=j, R=R, type= "Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
@@ -1041,14 +1056,14 @@ if sistema == "Bola bastão":
 
             plote_nyquist(m=m, g=g, j=j, R=R, type="Bola bastão PID", Kp=Kp, Ki=Ki, Kd=Kd)
        
-    if parte_simulacao == "Questão 8":
-        enunciado_questao8(type="Bola bastão")
-
     if parte_simulacao == "Questão 9":
         enunciado_questao9(type="Bola bastão")
 
     if parte_simulacao == "Questão 10":
         enunciado_questao10(type="Bola bastão")
+
+    if parte_simulacao == "Questão 11":
+        enunciado_questao11(type="Bola bastão")
 
 if sistema == "Pêndulo simples invertido":
     st.title("Simulação do Sistema Pêndulo Simples Invertido")
@@ -1073,7 +1088,7 @@ if sistema == "Pêndulo simples invertido":
 
     parte_simulacao = st.sidebar.selectbox(
         "Selecione a questão da simulação",
-        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10")
+        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10", "Questão 11")
     )
 
     st.sidebar.write("---")
@@ -1141,9 +1156,12 @@ if sistema == "Pêndulo simples invertido":
         enunciado_questao4(type="Pêndulo simples invertido")
 
     if parte_simulacao == "Questão 5":
+        enunciado_questao5(type="Pêndulo simples invertido")
 
-        with st.expander("Enunciado Questão 5"):
-            enunciado_questao5(type="Pêndulo simples invertido")
+    if parte_simulacao == "Questão 6":
+
+        with st.expander("Enunciado Questão 6"):
+            enunciado_questao6(type="Pêndulo simples invertido")
 
         # --- Inputs do Usuário ---
         st.sidebar.header("Inputs da Simulação")
@@ -1341,10 +1359,10 @@ if sistema == "Pêndulo simples invertido":
             
             plote_nyquist(m=m, g=g, L=L, b=b, k_MA=q_input, type= "Pêndulo simples invertido MA")
 
-    if parte_simulacao == "Questão 6":
+    if parte_simulacao == "Questão 7":
 
-        with st.expander("Enunciado Questão 6"):
-            enunciado_questao6(type="Pêndulo simples invertido")
+        with st.expander("Enunciado Questão 7"):
+            enunciado_questao7(type="Pêndulo simples invertido")
 
         # --- Inputs do Usuário ---
         st.sidebar.header("Inputs da Simulação")
@@ -1529,6 +1547,10 @@ if sistema == "Pêndulo simples invertido":
         if st.sidebar.button("Plote resposta em MF"):
             
             plote_resposta_MF_Pendulo_simples_invertido(m, g, L, b, K_feedback)
+
+        if st.sidebar.button("Plote resposta no tempo em função de K_feedback"):
+
+            plote_resposta_no_tempo(type= "Pêndulo simples invertido MF",m=m, g=g, L=L, b=b, k_feedback=K_feedback,)
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
@@ -1546,10 +1568,12 @@ if sistema == "Pêndulo simples invertido":
             
             plote_nyquist(m=m, g=g, L=L, b=b, k_feedback=K_feedback, type= "Pêndulo simples invertido MF")
 
-    if parte_simulacao == "Questão 7":
+    if parte_simulacao == "Questão 8":
 
-        with st.expander("Enunciado Questão 7"):
-            enunciado_questao7(type="Pêndulo simples invertido")
+        st.warning("Reavaliar necessidade desta questão")
+
+        with st.expander("Enunciado Questão 8"):
+            enunciado_questao8(type="Pêndulo simples invertido")
 
         # --- Inputs do Usuário ---
         st.sidebar.header("Inputs da Simulação")
@@ -1764,6 +1788,10 @@ if sistema == "Pêndulo simples invertido":
         if st.sidebar.button("Plote resposta em função de Kd"):
             
             resposta_pendulo_em_funcao_de_Kd(m, L, b, g)
+
+        if st.sidebar.button("Plote resposta no tempo em função de Kp, Ki e Kd"):
+
+            plote_resposta_no_tempo(m=m, g=g, L=L, b=b, Kp=Kp, Ki=Ki, Kd=Kd, type= "Pêndulo simples invertido PID")
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
             
@@ -1773,13 +1801,43 @@ if sistema == "Pêndulo simples invertido":
             
             plote_lugar_raizes(m=m, g=g, L=L, b=b, Kp=Kp, Ki=Ki, Kd=Kd, type= "Pêndulo simples invertido PID")
 
-    if parte_simulacao == "Questão 8":
-        enunciado_questao8(type="Pêndulo simples invertido")
-
     if parte_simulacao == "Questão 9":
         enunciado_questao9(type="Pêndulo simples invertido")
+        st.title("🎛️ Painel de Controle BLE - ESP32")
+        st.markdown("Comunicação sem fio direta do PC para a ESP32 usando Bluetooth Low Energy.")
+
+        st.divider()
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("Enviar Comandos")
+            comando = st.text_input("Digite um comando para a ESP32:")
+            
+            if st.button("Enviar para ESP32", type="primary"):
+                if comando:
+                    # Roda a função assíncrona dentro do Streamlit que é síncrono
+                    sucesso, mensagem = asyncio.run(send_command(comando))
+                    if sucesso:
+                        st.success(mensagem)
+                    else:
+                        st.error(mensagem)
+                else:
+                    st.warning("Digite algo primeiro!")
+
+        with col2:
+            st.subheader("Ler Dados")
+            if st.button("Ler status da ESP32"):
+                sucesso, mensagem = asyncio.run(read_status())
+                if sucesso:
+                    st.success(f"**ESP32 diz:** {mensagem}")
+                else:
+                    st.error(mensagem)
 
     if parte_simulacao == "Questão 10":
         enunciado_questao10(type="Pêndulo simples invertido")
+
+    if parte_simulacao == "Questão 11":
+        enunciado_questao11(type="Pêndulo simples invertido")
 # else:
 #     None
