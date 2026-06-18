@@ -1,15 +1,16 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
 import gymnasium as gym
 from ballbeam_gym.envs.balance import BallBeamBalanceEnv
 from src.utils import get_ball_start_pos, plote_resposta_no_tempo, render_bola_bastao_frame, plot_resultado_simulacao_bola_bastao, plot_resultado_simulacao_pendulo
-from src.utils import enunciado_questao1, enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10, enunciado_questao11
+from src.utils import enunciado_questao1, enunciado_questao2, enunciado_questao3, enunciado_questao4, enunciado_questao5, enunciado_questao6, enunciado_questao7, enunciado_questao8, enunciado_questao9, enunciado_questao10
 from src.utils import plote_resposta_MA_Bola_Bastao, plote_resposta_MF_Bola_Bastao, plote_resposta_PID_Bola_Bastao, plote_resposta_MA_Pendulo_simples_invertido, plote_resposta_MF_Pendulo_simples_invertido, plote_resposta_PID_Pendulo_simples_invertido
 from src.utils import resposta_pendulo_em_funcao_de_Kp, resposta_pendulo_em_funcao_de_Ki, resposta_pendulo_em_funcao_de_Kd
-from src.connect import send_command, read_status, scan_and_connect
+from src.connect import collect_error_data, send_command, read_status, scan_and_connect
 import asyncio
 import pygame
 import sys 
@@ -178,9 +179,9 @@ def bola_bastao_game(m, g, j, R, L, max_ang_alpha):
         screen.blit(title_text, title_rect)
         
         # Renderizar Instruções
-        inst_1 = font_inst.render("A - horário", True, (50, 50, 50))
+        inst_1 = font_inst.render("A - anti-horário", True, (50, 50, 50))
         inst_2 = font_inst.render("S - start", True, (0, 150, 0))
-        inst_3 = font_inst.render("D - anti-horário", True, (50, 50, 50))
+        inst_3 = font_inst.render("D - horário", True, (50, 50, 50))
         
         screen.blit(inst_1, inst_1.get_rect(center=(200, 180)))
         screen.blit(inst_2, inst_2.get_rect(center=(200, 220)))
@@ -322,8 +323,42 @@ st.set_page_config(
 
 sistema = st.sidebar.selectbox(
     "Escolha qual sistema deseja simular:",
-    ("Bola bastão", "Pêndulo simples invertido")
+    ("Menu Inicial", "Bola bastão", "Pêndulo simples invertido")
 )
+
+if sistema == "Menu Inicial":
+
+    st.title("Bem-vindo ao simulador interativo ControlHub! 🚀")
+    st.subheader("Aqui você pode explorar a dinâmica e o controle de sistemas clássicos.")
+
+    st.markdown("---")
+
+    st.subheader("Dentre eles, você pode escolher entre:")
+
+    # Criação de colunas para as imagens
+    col1, col2 = st.columns([2, 3], gap="large")  
+
+    with col1:
+        st.write("🎛️ **Controle:** Equilíbrio de posição")
+        st.image("sistema-ball-and-bean.png", caption="Sistema Bola-Bastão (Ball & Beam)")
+        
+
+    with col2:
+        st.write("⚖️ **Controle:** Estabilização de ângulo")
+        st.image("pendulum.png", caption="Pêndulo Simples Invertido")
+        
+
+    st.markdown("---")
+    
+    # Seção Como Usar
+    with st.expander("📖 Como usar o sistema (Clique para expandir)"):
+        st.markdown("""
+        ### Passo a passo para dominar a automação:
+        1. **Selecione o sistema** no menu da barra lateral esquerda 👈.
+        2. **Baixe o Roteiro:** Baixe o roteiro ao apertar o botão na barra lateral. Cada sistema terá um roteiro.
+        3. **Jogue e Simule:** De acordo com o que for pedido no roteiro, navegue entre as perguntas e execute as tarefas descritas 🕹️.
+
+        """)  
 
 if sistema == "Bola bastão":
     
@@ -335,14 +370,14 @@ if sistema == "Bola bastão":
         col2.image(caminho_imagem)
 
     st.sidebar.write("---")
-    caminho_roteiro = obter_caminho_arquivo("Arrumar - Roteiro Bola Bastão.docx")
+    caminho_roteiro = obter_caminho_arquivo("Roteiro Bola Bastão.docx")
 
     with open(caminho_roteiro, "rb") as file:
         btn = st.sidebar.download_button(
             label="Baixar Roteiro",
             icon="🚨",
             data=file,
-            file_name="Arrumar - Roteiro Bola Bastão.docx", # Você pode mudar o nome final do arquivo aqui se quiser tirar o "Arrumar -"
+            file_name="Roteiro Bola Bastão.docx", # Você pode mudar o nome final do arquivo aqui se quiser tirar o "Arrumar -"
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     st.sidebar.write("---") 
@@ -366,7 +401,7 @@ if sistema == "Bola bastão":
 
     parte_simulacao = st.sidebar.selectbox(
         "Selecione a questão da simulação",
-        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10", "Questão 11")
+        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10")
     )
 
     st.sidebar.write("---")
@@ -814,7 +849,7 @@ if sistema == "Bola bastão":
             plote_resposta_no_tempo(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
         
         if st.sidebar.button("Plote mapa de polos e zeros"):
-            st.wrie("")
+
             plote_mapa_polos_zeros(m=m, g=g, j=j, R=R, k_feedback=K_feedback, type="Bola bastão MF")
 
         if st.sidebar.button("Plote o lugar das raízes"):
@@ -1058,12 +1093,78 @@ if sistema == "Bola bastão":
        
     if parte_simulacao == "Questão 9":
         enunciado_questao9(type="Bola bastão")
+        
+        if st.button("Iniciar", type="primary"):
+        
+            # Congela a interface enquanto a ESP32 trabalha
+            with st.spinner("Aguarde... A ESP32 está coletando dados e calculando o erro..."):
+                
+                # Chama a função nova
+                sucesso, mensagem_ou_dado = asyncio.run(collect_error_data("Gamificacao Bola Bastao"))
+                
+                if sucesso:
+                    st.success("Coleta finalizada com sucesso!")
+                    
+                    try:
+                        # Converte o texto recebido para número decimal
+                        erro_total_num = float(mensagem_ou_dado)
+                        
+                        st.divider() # Linha divisória para dar um visual legal
+                        
+                        # Exibe o número de forma BEM GRANDE e centralizada (usando HTML seguro no Streamlit)
+                        st.markdown("<h3 style='text-align: center; color: gray;'>Erro Total Acumulado</h3>", unsafe_allow_html=True)
+                        st.markdown(
+                            f"<h1 style='text-align: center; color: #FF4B4B; font-size: 85px; margin-top: -20px;'>{erro_total_num:.2f}</h1>", 
+                            unsafe_allow_html=True
+                        )
+                        
+                        st.divider()
+                        
+                    except ValueError:
+                        st.error("Erro ao processar os dados. O valor recebido não é um número válido.")
+                        st.write(f"Dado bruto: {mensagem_ou_dado}")
+                else:
+                    st.error(mensagem_ou_dado)
 
     if parte_simulacao == "Questão 10":
         enunciado_questao10(type="Bola bastão")
 
-    if parte_simulacao == "Questão 11":
-        enunciado_questao11(type="Bola bastão")
+        Kp = st.slider("Escolha um valor de Kp para o controle PID", min_value = 0.0, max_value = 5.0, value = 1.0, step = 0.1)
+        Ki = st.slider("Escolha um valor de Ki para o controle PID", min_value = 0.0, max_value = 5.0, value = 1.0, step = 0.1)
+        Kd = st.slider("Escolha um valor de Kd para o controle PID", min_value = 0.0, max_value = 5.0, value = 1.0, step = 0.1)
+
+        if st.button("Iniciar", type="primary"):
+        
+            # Congela a interface enquanto a ESP32 trabalha
+            with st.spinner("Aguarde... A ESP32 está coletando dados e calculando o erro..."):
+                
+                # Chama a função nova
+                sucesso, mensagem_ou_dado = asyncio.run(collect_error_data(f"PID Bola Bastao (Kp={Kp}, Ki={Ki}, Kd={Kd})"))
+                
+                if sucesso:
+                    st.success("Coleta finalizada com sucesso!")
+                    
+                    try:
+                        # Converte o texto recebido para número decimal
+                        erro_total_num = float(mensagem_ou_dado)
+                        
+                        st.divider() # Linha divisória para dar um visual legal
+                        
+                        # Exibe o número de forma BEM GRANDE e centralizada (usando HTML seguro no Streamlit)
+                        st.markdown("<h3 style='text-align: center; color: gray;'>Erro Total Acumulado</h3>", unsafe_allow_html=True)
+                        st.markdown(
+                            f"<h1 style='text-align: center; color: #FF4B4B; font-size: 85px; margin-top: -20px;'>{erro_total_num:.2f}</h1>", 
+                            unsafe_allow_html=True
+                        )
+                        
+                        st.divider()
+                        
+                    except ValueError:
+                        st.error("Erro ao processar os dados. O valor recebido não é um número válido.")
+                        st.write(f"Dado bruto: {mensagem_ou_dado}")
+                else:
+                    st.error(mensagem_ou_dado)
+
 
 if sistema == "Pêndulo simples invertido":
     st.title("Simulação do Sistema Pêndulo Simples Invertido")
@@ -1074,21 +1175,21 @@ if sistema == "Pêndulo simples invertido":
         col2.image(caminho_imagem)
 
     st.sidebar.write("---")
-    caminho_roteiro = obter_caminho_arquivo("Arrumar - Roteiro Pêndulo Simples Invertido.docx")
+    caminho_roteiro = obter_caminho_arquivo("Roteiro Pêndulo Simples Invertido.docx")
 
     with open(caminho_roteiro, "rb") as file:
         btn = st.sidebar.download_button(
             label="Baixar Roteiro",
             icon="🚨",
             data=file,
-            file_name="Arrumar - Roteiro Pêndulo Simples Invertido.docx", # Você pode mudar o nome final do arquivo aqui se quiser tirar o "Arrumar -"
+            file_name="Roteiro Pêndulo Simples Invertido.docx", # Você pode mudar o nome final do arquivo aqui se quiser tirar o "Arrumar -"
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
     st.sidebar.write("---")
 
     parte_simulacao = st.sidebar.selectbox(
         "Selecione a questão da simulação",
-        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10", "Questão 11")
+        ("Questão 1", "Questão 2", "Questão 3", "Questão 4", "Questão 5", "Questão 6", "Questão 7", "Questão 8", "Questão 9", "Questão 10")
     )
 
     st.sidebar.write("---")
@@ -1431,15 +1532,26 @@ if sistema == "Pêndulo simples invertido":
                         control_type_history.append(0) # Identificador para o gráfico
 
                 else:
-                    erro = (0 - theta)
-                    erro_history.append(erro)
+                    if abs(valor_graus) <= 20:
+                        erro = (0 - theta)
+                        erro_history.append(erro)
 
-                    torque = K_feedback * erro
-                    torque = np.clip(torque, -lim_motor, lim_motor)
-                    external_action_history.append(torque)
-                    resistencia_torque = -b * theta_dot
-                    action = [torque + resistencia_torque]
-                    control_type_history.append(1) # Identificador para o gráfico
+                        torque = K_feedback * erro
+                        torque = np.clip(torque, -lim_motor, lim_motor)
+                        external_action_history.append(torque)
+                        resistencia_torque = -b * theta_dot
+                        action = [torque + resistencia_torque]
+                        control_type_history.append(1) # Identificador para o gráfico
+                    else:
+                        # Entrada constante
+                        erro = (0 - theta)
+                        erro_history.append(erro)
+
+                        torque = lim_motor
+                        external_action_history.append(torque)
+                        resistencia_torque = -b * theta_dot
+                        action = [torque + resistencia_torque]
+                        control_type_history.append(0) # Identificador para o gráfico
                     
                 state, reward, terminated, truncated, info = env.step(action)
 
@@ -1569,11 +1681,8 @@ if sistema == "Pêndulo simples invertido":
             plote_nyquist(m=m, g=g, L=L, b=b, k_feedback=K_feedback, type= "Pêndulo simples invertido MF")
 
     if parte_simulacao == "Questão 8":
-
-        st.warning("Reavaliar necessidade desta questão")
-
-        with st.expander("Enunciado Questão 8"):
-            enunciado_questao8(type="Pêndulo simples invertido")
+        st.warning("Questão em Avaliação para trabalhos futuros.")
+        enunciado_questao8(type="Pêndulo simples invertido")
 
         # --- Inputs do Usuário ---
         st.sidebar.header("Inputs da Simulação")
@@ -1657,22 +1766,41 @@ if sistema == "Pêndulo simples invertido":
                         control_type_history.append(0) # Identificador para o gráfico
 
                 else:
-                    erro = (0 - theta)
-                    erro_history.append(erro)
+                    # Lógica de Transição
+                    if abs(valor_graus) <= 20:
 
-                    dt_sim = env.unwrapped.dt 
+                        # FASE DE CATCH - Feedback
+                        erro = (0 - theta)
+                        erro_history.append(erro)
 
-                    erro_integral += erro * dt_sim 
-                    erro_integral = np.clip(erro_integral, -10.0, 10.0)
+                        dt_sim = env.unwrapped.dt 
 
-                    erro_derivativo = (0 - theta_dot)
+                        erro_integral += erro * dt_sim 
+                        erro_integral = np.clip(erro_integral, -10.0, 10.0)
 
-                    torque = (Kp * erro) + (Kd * erro_derivativo) + (Ki * erro_integral)
-                    torque = np.clip(torque, -lim_motor, lim_motor)
-                    external_action_history.append(torque)
-                    resistencia_torque = -b * theta_dot
-                    action = [torque + resistencia_torque]
-                    control_type_history.append(1) # Identificador para o gráfico
+                        erro_derivativo = (0 - theta_dot)
+
+                        torque = (Kp * erro) + (Kd * erro_derivativo) + (Ki * erro_integral)
+                        torque = np.clip(torque, -lim_motor, lim_motor)
+                        external_action_history.append(torque)
+                        resistencia_torque = -b * theta_dot
+                        action = [torque + resistencia_torque]
+                        control_type_history.append(1) # Identificador para o gráfico
+                    
+                    else:
+                        # Entrada constante
+                        erro = (0 - theta)
+                        erro_history.append(erro)
+
+                        erro_integral += erro
+                        erro_integral = np.clip(erro_integral, -10.0, 10.0) #Não permite que a integral cresça infinitamente
+
+                        torque = lim_motor
+                        external_action_history.append(torque)
+                        resistencia_torque = -b * theta_dot
+                        action = [torque + resistencia_torque]
+                        control_type_history.append(0) # Identificador para o gráfico
+
                     
                 state, reward, terminated, truncated, info = env.step(action)
 
@@ -1803,41 +1931,73 @@ if sistema == "Pêndulo simples invertido":
 
     if parte_simulacao == "Questão 9":
         enunciado_questao9(type="Pêndulo simples invertido")
-        st.title("🎛️ Painel de Controle BLE - ESP32")
-        st.markdown("Comunicação sem fio direta do PC para a ESP32 usando Bluetooth Low Energy.")
 
-        st.divider()
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.subheader("Enviar Comandos")
-            comando = st.text_input("Digite um comando para a ESP32:")
-            
-            if st.button("Enviar para ESP32", type="primary"):
-                if comando:
-                    # Roda a função assíncrona dentro do Streamlit que é síncrono
-                    sucesso, mensagem = asyncio.run(send_command(comando))
-                    if sucesso:
-                        st.success(mensagem)
-                    else:
-                        st.error(mensagem)
-                else:
-                    st.warning("Digite algo primeiro!")
-
-        with col2:
-            st.subheader("Ler Dados")
-            if st.button("Ler status da ESP32"):
-                sucesso, mensagem = asyncio.run(read_status())
+        if st.button("Iniciar", type="primary"):
+        
+            # Congela a interface enquanto a ESP32 trabalha
+            with st.spinner("Aguarde... A ESP32 está coletando dados e calculando o erro..."):
+                
+                # Chama a função nova
+                sucesso, mensagem_ou_dado = asyncio.run(collect_error_data("Gamificacao Pendulo Invertido"))
+                
                 if sucesso:
-                    st.success(f"**ESP32 diz:** {mensagem}")
+                    st.success("Coleta finalizada com sucesso!")
+                    
+                    try:
+                        # Converte o texto recebido para número decimal
+                        erro_total_num = float(mensagem_ou_dado)
+                        
+                        st.divider() # Linha divisória para dar um visual legal
+                        
+                        # Exibe o número de forma BEM GRANDE e centralizada (usando HTML seguro no Streamlit)
+                        st.markdown("<h3 style='text-align: center; color: gray;'>Erro Total Acumulado</h3>", unsafe_allow_html=True)
+                        st.markdown(
+                            f"<h1 style='text-align: center; color: #FF4B4B; font-size: 85px; margin-top: -20px;'>{erro_total_num:.2f}</h1>", 
+                            unsafe_allow_html=True
+                        )
+                        
+                        st.divider()
+                        
+                    except ValueError:
+                        st.error("Erro ao processar os dados. O valor recebido não é um número válido.")
+                        st.write(f"Dado bruto: {mensagem_ou_dado}")
                 else:
-                    st.error(mensagem)
+                    st.error(mensagem_ou_dado)
+    
+
 
     if parte_simulacao == "Questão 10":
         enunciado_questao10(type="Pêndulo simples invertido")
+        Kf = st.slider("Escolha um valor de Kf para o controle por lqr", min_value = 0.0, max_value = 0.10, value = 0.00, step = 0.001)
 
-    if parte_simulacao == "Questão 11":
-        enunciado_questao11(type="Pêndulo simples invertido")
-# else:
-#     None
+        if st.button("Iniciar", type="primary"):
+        
+            # Congela a interface enquanto a ESP32 trabalha
+            with st.spinner("Aguarde... A ESP32 está coletando dados e calculando o erro..."):
+                
+                # Chama a função nova
+                sucesso, mensagem_ou_dado = asyncio.run(collect_error_data(f"Feedback Pendulo Invertido (Kf={Kf})"))
+                
+                if sucesso:
+                    st.success("Coleta finalizada com sucesso!")
+                    
+                    try:
+                        # Converte o texto recebido para número decimal
+                        erro_total_num = float(mensagem_ou_dado)
+                        
+                        st.divider() # Linha divisória para dar um visual legal
+                        
+                        # Exibe o número de forma BEM GRANDE e centralizada (usando HTML seguro no Streamlit)
+                        st.markdown("<h3 style='text-align: center; color: gray;'>Erro Total Acumulado</h3>", unsafe_allow_html=True)
+                        st.markdown(
+                            f"<h1 style='text-align: center; color: #FF4B4B; font-size: 85px; margin-top: -20px;'>{erro_total_num:.2f}</h1>", 
+                            unsafe_allow_html=True
+                        )
+                        
+                        st.divider()
+                        
+                    except ValueError:
+                        st.error("Erro ao processar os dados. O valor recebido não é um número válido.")
+                        st.write(f"Dado bruto: {mensagem_ou_dado}")
+                else:
+                    st.error(mensagem_ou_dado)

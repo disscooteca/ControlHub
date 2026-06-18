@@ -1,5 +1,5 @@
 import streamlit as st
-
+import asyncio
 from bleak import BleakScanner, BleakClient
 
 # Os mesmos UUIDs e Nome usados no código da ESP32
@@ -24,7 +24,7 @@ async def send_command(command: str):
     if device:
         try:
             async with BleakClient(device) as client:
-                await client.write_gatt_char(CHAR_UUID, command.encode('utf-8'))
+                await client.write_gatt_char(CHAR_UUID, command.encode('utf-8'), response=True)
                 return True, f"Comando '{command}' enviado com sucesso!"
         except Exception as e:
             return False, f"Erro ao enviar: {e}"
@@ -43,6 +43,41 @@ async def read_status():
             return False, f"Erro ao ler: {e}"
     else:
         return False, "ESP32 não encontrada."
+    
+async def collect_error_data(command: str):
+    """Envia o comando, aguarda os 20s da ESP32 e retorna o Erro Total acumulado."""
+    device = await scan_and_connect()
+    if not device:
+        return False, "ESP32 não encontrada."
 
-# --- INTERFACE DO STREAMLIT ---
+    erro_recebido = ""
+    coleta_finalizada = asyncio.Event()
 
+    # Como a ESP32 agora manda apenas 1 notificação com o valor do erro,
+    # pegamos esse valor e avisamos o código para parar de esperar.
+    def notification_handler(sender, data):
+        nonlocal erro_recebido
+        erro_recebido = data.decode('utf-8')
+        coleta_finalizada.set() # Destrava o wait_for
+
+    try:
+        async with BleakClient(device) as client:
+            # 1. Ativa a escuta
+            await client.start_notify(CHAR_UUID, notification_handler)
+
+            # 2. Envia o comando para iniciar a rotina na placa
+            await client.write_gatt_char(CHAR_UUID, command.encode('utf-8'), response=True)
+
+            # 3. Fica esperando a placa fazer a matemática por 20s e devolver a notificação
+            # Mantemos os 30s de timeout para dar margem de segurança
+            await asyncio.wait_for(coleta_finalizada.wait(), timeout=40.0)
+
+            # 4. Desativa a escuta
+            await client.stop_notify(CHAR_UUID)
+
+            return True, erro_recebido
+            
+    except asyncio.TimeoutError:
+        return False, "A ESP32 demorou demais para responder ou o tempo acabou."
+    except Exception as e:
+        return False, f"Erro na conexão BLE: {e}"

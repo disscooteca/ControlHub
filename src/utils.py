@@ -70,15 +70,20 @@ def enunciado_questao2(type):
 
         # Equação principal da imagem
         st.latex(r"a \cdot m + a \cdot \frac{J}{R^2} + m \cdot g \cdot \operatorname{sen}(\alpha) = 0")
+
+
+        st.markdown("**Perguntas:**")
+
+        st.markdown("a)")
         
         st.markdown("""
-        **Pergunta:** \n\nComo obter a função de transferência considerando a entrada como o seno do ângulo do bastão $(sen(alpha))$ e a saída sendo a posição da bola ($x$)?      
+         \n\nComo obter a função de transferência considerando a entrada como o seno do ângulo do bastão $(sen(alpha))$ e a saída sendo a posição da bola ($x$)?      
         """)
 
         st.markdown("b)")
 
         st.markdown(r"""
-        Considerando que $b = \frac{m*g}{m+\frac{J}{R^2}}$, como fica a função de transferência em malha aberta?
+        Considerando que $x = \frac{m*g}{m+\frac{J}{R^2}}$, como fica a função de transferência em malha aberta?
         """)
 
         st.markdown("c)")
@@ -278,9 +283,9 @@ def enunciado_questao5(type):
 
         st.latex(r"T(s) = \frac{ganho}{s^2 + 2\zeta\omega_ns + \omega_n^2}")
 
-        st.markdown("Quais são esses valores para a função de transferência em malha fechada do pêndulo simples invertido? O que eles dizem sobre a resposta do sistema?")
+        st.markdown("Quais são esses valores para a função de transferência em malha fechada do bola e bastão? O que eles dizem sobre a resposta do sistema?")
 
-        st.info(r"💡 *Dica:** Considere $G_{mf} = \frac{b}{s^2+b}$ e $b = \frac{mg}{m+\frac{J}{R^2}}$ pois $C(s) = -1$")
+        st.info(r"💡 *Dica:* Considere $G_{mf} = \frac{b}{s^2+b}$ e $b = -\frac{mg}{m+\frac{J}{R^2}}$")
 
         st.markdown("b)\n")
 
@@ -321,12 +326,14 @@ def enunciado_questao6(type):
         st.warning("Os prints devem conter os inputs da simulação juntamente com as informações pedidas abaixo.")
 
         st.markdown("""
-                    a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs à sua escolha.\n
+                    a) Simule o sistema para um valor de entrada degrau diferente de 0.00 e demais inputs à sua escolha. O que os gráficos de desempenho dizem sobre o sistema?\n
                     b) Plote a resposta ao degrau para o mesmo degrau escolhido na simulação.\n
-                    b.1 - Qual o motivo da resposta ao degrau estar diferente (se o valor escolhido for positivo a resposta vai para o menos infinito e vice-versa)?\n
+                    b.1 - Qual o motivo da resposta ao degrau estar diferente na simulação e no plote da resposta? Para ver, coloque uma entrada positiva e compare o plote da resposta com os gráficos de desempenho\n
                     c) Plote o mapa de polos e zeros e o lugar das raízes e justifique o porquê do sistema ser instável para qualquer degrau colocado na entrada.\n
                     d) Plote os diagramas de Bode e Nyquist e explique o que eles dizem sobre esse sistema em Malha Aberta.
                     """)
+        
+        st.info("Para a questão b.1, a resposta se correlaciona ao que foi perguntado na Questão 2.")
     
     if type == "Pêndulo simples invertido":
         st.markdown(r"""
@@ -447,28 +454,37 @@ def enunciado_questao8(type):
 
 def enunciado_questao9(type):
     if type == "Bola bastão":
-        st.markdown("### Questão 9: Simulação no Kit Real - Malha Aberta")
+        st.title("Questão 9: 🎯 Game Bola e Bastão")
+        st.markdown("Comunicação sem fio direta do PC para a ESP32 usando Bluetooth Low Energy.")
+
+        st.subheader("Parâmetro de desempenho: Erro Acumulado")
+        st.markdown("Isso ativará o Bola e Bastão. **Atenção:** Acione a chave do console!")
 
     if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 9: Simulação no Kit Real - Malha Aberta")
+        st.title("Questão 9: 🎯 Game Pêndulo Simples Invertido")
+        st.markdown("Comunicação sem fio direta do PC para a ESP32 usando Bluetooth Low Energy.")
+
+        st.subheader("Parâmetro de desempenho: Erro Acumulado")
+        st.markdown("Isso ativará o Pêndulo Simples Invertido. **Atenção:** Acione a chave do console!")
 
 def enunciado_questao10(type):
     if type == "Bola bastão":
-        st.markdown("### Questão 10: Simulação no Kit Real - Malha Fechada")
+        st.title("Questão 10: PID Bola e Bastão")
+        st.markdown("Comunicação sem fio direta do PC para a ESP32 usando Bluetooth Low Energy.")
+
+        st.subheader("Parâmetro de desempenho: Erro Acumulado")
+        st.markdown("Isso ativará o Bola e Bastão. **Atenção:** Acione a chave do console!")
 
     if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 10: Simulação no Kit Real - Malha Fechada")
+        st.title("Questão 10: LQR Pêndulo Simples Invertido")
+        st.markdown("Comunicação sem fio direta do PC para a ESP32 usando Bluetooth Low Energy.")
 
-def enunciado_questao11(type):
-    if type == "Bola bastão":
-        st.markdown("### Questão 11: Simulação no Kit Real - Controle PID")
-
-    if type == "Pêndulo simples invertido":
-        st.markdown("### Questão 11: Simulação no Kit Real - Controle PID")   
+        st.subheader("Parâmetro de desempenho: Erro Acumulado")
+        st.markdown("Isso ativará o Pêndulo Simples Invertido. **Atenção:** Acione a chave do console!")
     
 def plote_resposta_MA_Bola_Bastao(m, g, j, R, q):
 
-    Hs = TransferFunction([-m*g], [(m + j/R**2), 0, 0])
+    Hs = TransferFunction([m*g], [(m + j/R**2), 0, 0])
 
     u = q * np.ones(1001) 
     
@@ -1354,7 +1370,7 @@ def plote_resposta_no_tempo(type, m=None, g=None, j=None, R=None, L=None, b=None
 def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":
@@ -1414,7 +1430,7 @@ def plote_mapa_polos_zeros(type, m=None, g=None, j=None, R=None, L=None, b=None,
 def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None,Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":
@@ -1473,7 +1489,7 @@ def plote_lugar_raizes(type, m=None, g=None, j=None, R=None, L=None, b=None, k_M
 def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":
@@ -1528,7 +1544,7 @@ def plote_bode(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None
 def plote_nyquist(type, m=None, g=None, j=None, R=None, L=None, b=None, k_MA = None, k_feedback = None, Kp=None, Ki=None, Kd=None):
 
     if type == "Bola bastão MA":
-        Hs = ctl.TransferFunction([-m*g], [(m + j/R**2), 0, 0])
+        Hs = ctl.TransferFunction([m*g], [(m + j/R**2), 0, 0])
         sys = k_MA * Hs
 
     if type == "Bola bastão MF":
