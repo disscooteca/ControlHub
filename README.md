@@ -59,7 +59,8 @@ Se você deseja replicar o kit físico, faça as conexões da ESP32 utilizando o
 ### 2. Interface Python (Streamlit)
 Certifique-se de ter o Python 3.9+ instalado em sua máquina.
 
-#Execute ControlHub.exe
+* Execute ControlHub.exe
+* * Encontrado nos releases
 
  ou
  
